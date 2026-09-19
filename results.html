@@ -1,0 +1,1956 @@
+<!DOCTYPE html>
+<html lang="ar" direction="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>منظومة النتائج الالكترونية</title>
+    <!-- استدعاء خط Cairo لإعطاء جمالية فائقة ووضوح ممتاز للكروت والواجهة -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+    
+        body {
+            font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
+            direction: rtl;
+            text-align: right;
+            margin: 20px;
+            background-color: #f5f7fa;
+            color: #333;
+            margin-bottom: 80px; /* مسافة أمان سفلية للواجهة */
+        }
+        .new-header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            background: #fff;
+            padding: 15px 25px;
+            border: 2px solid #000;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        /* إنزال اسم المدرسة لأسفل قليلاً لتوازن مثالي مع بقية العناصر */
+        .header-right { 
+            font-size: 16px; 
+            font-weight: bold; 
+            flex: 1; 
+            text-align: right; 
+            margin-top: 15px; /* تم زيادة المساحة العلوية للإنزال البصري */
+        }
+        /* تعديل الصف والشعبة لتكون بمحاذاة اليمين تماماً في الواجهة */
+        .header-left { 
+            font-size: 16px; 
+            font-weight: bold; 
+            flex: 1; 
+            text-align: right; 
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            margin-top: 8px;
+        }
+        /* تعديل العمود الأوسط لواجهة المنظومة ليكون بمحاذاة وسطية تامة وعناصر متتالية */
+        .header-center {
+            text-align: center;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            align-items: center;
+            justify-content: center;
+        }
+        .header-row-inline { display: block; font-size: 15px; font-weight: bold; margin-bottom: 5px; text-align: center; }
+        
+        .editable-input-header {
+            font-family: 'Cairo', sans-serif;
+            font-weight: bold;
+            font-size: 15px;
+            border: none;
+            border-bottom: 1px dashed #000;
+            color: #0056b3;
+            background: transparent;
+            width: 250px;
+            padding: 2px;
+            text-align: center;
+        }
+        .editable-input-header:focus {
+            outline: none;
+            border-bottom: 2px solid #0056b3;
+        }
+
+        .custom-select {
+            font-family: 'Cairo', sans-serif;
+            padding: 4px 8px;
+            font-weight: bold;
+            font-size: 14px;
+            border: 1px solid #000;
+            background: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+        }
+        .controls-container {
+            background: #fff;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .controls-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        .btn {
+            font-family: 'Cairo', sans-serif;
+            padding: 6px 12px;
+            font-weight: bold;
+            font-size: 13px;
+            border: 1px solid #000;
+            border-radius: 4px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-add { background-color: #28a745; color: white; }
+        .btn-excel { background-color: #17a2b8; color: white; }
+        .btn-cards { background-color: #6f42c1; color: white; }
+        .btn-print { background-color: #ffc107; color: black; }
+        .btn-backup { background-color: #4a5568; color: white; }
+        .btn-restore { background-color: #dd6b20; color: white; }
+        .btn-clear-grades { background-color: #e53e3e; color: white; }
+        .btn-clear-all { background-color: #b7791f; color: white; }
+        .btn-migrate { background-color: #0056b3; color: white; border-color: #004085; }
+        .btn-delete { background-color: #dc3545; color: white; padding: 2px 6px; font-size: 11px; }
+        .btn-migrate-row { background-color: #0056b3; color: white; padding: 2px 6px; font-size: 11px; margin-left: 4px; }
+        
+        .save-indicator {
+            display: none;
+            align-items: center;
+            background-color: #d4edda;
+            color: #155724;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: bold;
+            border: 1px solid #c3e6cb;
+        }
+        .search-container { display: flex; gap: 20px; width: 100%; align-items: center; }
+        .search-input { font-family: 'Cairo', sans-serif; padding: 5px 10px; border: 1px solid #000; border-radius: 4px; width: 250px; font-weight: bold; }
+        
+        /* إعدادات جدول الواجهة مع تجميد الأعمدة */
+        .table-responsive { 
+            width: 100%; 
+            overflow-x: auto; 
+            background: #fff; 
+            border: 1px solid #000; 
+            border-radius: 4px; 
+            max-height: 600px; 
+        }
+        .results-table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: center; }
+        .results-table th, .results-table td { border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 6px 4px; font-size: 13px; }
+        .results-table th { background-color: #f2f2f2; position: sticky; top: 0; z-index: 20; border-top: 1px solid #000; }
+        .total-sub-th { position: sticky; z-index: 19; font-size: 11px; }
+        
+        /* تصغير حجم نص عمود المجموع كتابة في الواجهة لمنع تمدد وارتفاع الخلايا */
+        .total-words-field {
+            font-size: 10.5px !important;
+            max-width: 130px;
+            word-wrap: break-word;
+            line-height: 1.2 !important;
+            padding: 2px !important;
+        }
+
+        /* تجميد الأعمدة في الواجهة (ت، رقم القيد، اسم التلميذ) */
+        .sticky-index-col { position: sticky; right: 0; background-color: #f2f2f2 !important; z-index: 22; border-right: 1px solid #000; }
+        .sticky-id-col { position: sticky; right: 35px; background-color: #fff !important; z-index: 21; box-shadow: -1px 0 0 #000; }
+        .sticky-name-col { position: sticky; right: 115px; background-color: #fff !important; z-index: 21; box-shadow: -2px 0 0 #000; text-align: center; }
+        
+        th.sticky-id-col { background-color: #f2f2f2 !important; z-index: 23; }
+        th.sticky-name-col { background-color: #f2f2f2 !important; z-index: 23; }
+
+        .direct-input {
+            width: 95%;
+            border: none;
+            background: transparent;
+            text-align: center;
+            font-family: 'Cairo', sans-serif;
+            font-weight: bold;
+            font-size: 14px;
+            padding: 2px;
+        }
+        .direct-input:focus {
+            outline: 2px solid #0056b3;
+            background-color: #e6f2ff;
+            border-radius: 2px;
+        }
+        /* تعديل محاذاة اسم التلميذ إلى الوسط تماماً */
+        .name-input-cell { text-align: center; padding: 2px; width: 180px; min-width: 180px; }
+        .id-input-cell { width: 80px; min-width: 80px; }
+
+        .rotated-th { height: 105px; vertical-align: middle !important; padding: 0 !important; }
+        .rotated-text { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; font-weight: bold; display: inline-block; margin: 0 auto; }
+        
+        .stats-container { width: 100%; overflow-x: auto; border: 1px solid #000; background: #fff; margin-top: 15px; margin-bottom: 10px; }
+        .stats-table { width: 100%; border-collapse: collapse; text-align: center; font-size: 13px; }
+        .stats-table th, .stats-table td { border: 1px solid #000; padding: 6px 4px; font-weight: bold; }
+        .stats-title-col { background-color: #e9e9e9; text-align: right; padding-right: 10px !important; width: 150px; }
+        
+        .fail-grade { color: #990000 !important; font-weight: bold; text-decoration: underline; text-decoration-color: #990000; text-decoration-style: solid; text-decoration-thickness: 1px; }
+        .status-pass { color: #27ae60 !important; font-weight: bold; }
+        .status-reappear { color: #dd6b20 !important; font-weight: bold; }
+        .status-fail { color: #990000 !important; font-weight: bold; }
+        
+        /* التذييل في الواجهة التفاعلية - بدون خلفية أو أشكال متداخلة */
+        .system-footer-view {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            padding: 15px 10px;
+            border-top: 1px dashed #333;
+        }
+      @media print {
+    .no-print {
+        display: none !important;
+    }
+}
+        /* حاوية التذييل المخصصة للطباعة النظيفة لضمان ظهور التواقيع والصفحات أسفل جدول الإحصاء حصراً */
+        .print-footer-block {
+            display: none; /* مخفي في الواجهة ويظهر في الطباعة فقط */
+            width: 100%;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        .print-footer-content {
+            display: flex;
+            direction: ltr;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            font-size: 14px;
+        }
+        .print-footer-content .lbl-manager-footer { direction: rtl; }
+        
+        /* تنسيقات كروت الطباعة */
+        #cardsContainer { display: none; background-color: #146c6c; padding: 20px; }
+
+        /* ===== سجل المكملين والراسبين ===== */
+        #reappearReportContainer { display: none; background-color: #146c6c; padding: 20px; }
+        .reappear-report-page {
+            background: #fff;
+            width: 21cm;
+            min-height: 29.7cm;
+            margin: 0 auto 20px auto;
+            padding: 1.2cm;
+            box-sizing: border-box;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            font-family: 'Cairo', sans-serif;
+        }
+        .reappear-report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .reappear-report-header .rr-school-name {
+            font-size: 16px;
+            font-weight: 900;
+            flex: 1;
+            text-align: right;
+        }
+        .reappear-report-header .rr-center-title {
+            flex: 1.4;
+            text-align: center;
+        }
+        .reappear-report-header .rr-center-title h2 { margin: 0 0 4px 0; font-size: 19px; }
+        .reappear-report-header .rr-center-title p { margin: 2px 0; font-size: 14px; font-weight: bold; }
+        .reappear-report-header .rr-spacer { flex: 1; }
+
+        .reappear-report-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .reappear-report-table th, .reappear-report-table td { border: 1px solid #000; padding: 6px 5px; text-align: center; font-weight: bold; }
+        .reappear-report-table thead th { background-color: #0056b3 !important; color: #fff !important; font-weight: bold; }
+        .reappear-report-table td.rr-name-col { text-align: right; padding-right: 8px; }
+        .reappear-report-table td.rr-subjects-col { text-align: right; padding-right: 8px; font-size: 12px; }
+
+        .reappear-report-footer {
+            display: flex;
+            direction: ltr;
+            justify-content: flex-start;
+            margin-top: 40px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .reappear-report-footer .rr-manager-block { text-align: center; direction: rtl; }
+        .reappear-report-footer .rr-manager-block .rr-sig-line { margin-top: 35px; border-top: 1px solid #000; padding-top: 4px; width: 180px; }
+
+        .rr-empty-note { text-align: center; padding: 30px; font-weight: bold; color: #990000; }
+        .report-card {
+            font-family: 'Cairo', sans-serif;
+            background: #fff; border: 10px solid #2c3e50; border-radius: 12px; padding: 30px 35px; margin: 0 auto 30px auto;
+            width: 18.5cm; height: 26.5cm; box-sizing: border-box; direction: rtl; box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            page-break-inside: avoid; page-break-after: always; position: relative;
+        }
+        .report-card * { font-weight: bold !important; }
+        
+        .card-header-new { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; width: 100%; }
+        .card-header-right { text-align: center; font-size: 15px; line-height: 1.6; color: #000; flex: 1; display: flex; flex-direction: column; align-items: flex-start; }
+        .card-header-left { text-align: center; font-size: 16px; color: #000; flex: 1; display: flex; flex-direction: column; align-items: flex-end; }
+        
+        .card-header-center-box { 
+            border: 3px solid #000000; background-color: #1abc9c; padding: 12px 20px; text-align: center; 
+            min-width: 7.5cm; border-radius: 6px; display: flex; flex-direction: column; gap: 4px; align-items: center; justify-content: center;
+        }
+        .card-header-center-box h2 { margin: 0; font-size: 19px; color: #ffffff; }
+        .card-header-center-box p { margin: 0; font-size: 14px; color: #ffffff; }
+        
+        .card-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; font-size: 16px; padding: 12px; border-radius: 4px; border: 3px solid #000000; text-align: right; }
+        .card-info-item span { border-bottom: 1.5px solid #000; padding: 0 5px; color: #0056b3; }
+        
+        .card-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; text-align: center; border: 2.5px solid #1a252f; }
+        .card-table th { background-color: #570c05; color: white; font-size: 16px; padding: 8px 4px; }
+        .card-table td { border: 2.5px solid #1a252f; padding: 0px 8px 0px 0px !important; height: 35px; font-size: 16px; vertical-align: middle; text-align: right; }
+        
+        .card-grade-highlight, .card-grade-word, .card-grade-status { text-align: center !important; padding-right: 0 !important; }
+        .card-subject-name { text-align: right; padding-right: 12px !important; font-size: 17px !important; color: #2c3e50; }
+        .card-grade-highlight { font-size: 22px !important; color: #000000; }
+        
+        .card-summary { display: flex; flex-direction: column; gap: 10px; border: 3px solid #2c3e50; border-radius: 6px; padding: 15px; margin-bottom: 20px; font-size: 16px; background-color: #fdfefe; }
+        .card-summary-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .card-summary-words-row { display: flex; align-items: center; gap: 5px; font-size: 15px; border-top: 1px dashed #ccc; padding-top: 8px; }
+        
+        .card-footer-signatures { display: flex; justify-content: space-between; position: absolute; bottom: 30px; left: 35px; right: 35px; font-size: 15px; }
+        .card-footer-signatures .sig-block { display: flex; flex-direction: column; align-items: center; min-width: 180px; }
+        .card-footer-signatures .sig-space { width: 140px; border-top: 2px solid #1a252f; margin-bottom: 8px; }
+
+        /* شاشات المودال المنبثقة */
+        .custom-modal { display: none; position: fixed; z-index: 500; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
+        .modal-content { background-color: #fff; margin: 10% auto; padding: 20px; border: 2px solid #000; width: 50%; border-radius: 6px; }
+        .paste-textarea { width: 100%; height: 180px; box-sizing: border-box; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; text-align: right; }
+
+        .migrate-select-group { display: flex; flex-direction: column; gap: 15px; margin: 20px 0; }
+        .migrate-select-item { display: flex; align-items: center; gap: 15px; font-weight: bold; }
+
+        @media print {
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            body { margin: 0 !important; padding: 0 !important; background-color: #fff; font-family: 'Cairo', sans-serif; margin-bottom: 0px !important; }
+            .controls-container, .actions-col, .save-indicator, .custom-modal, .no-print-btn, .system-footer-view { display: none !important; }
+            [data-subject-idx] { display: table-cell !important; }
+            .custom-select, .editable-input-header { border: none !important; background: transparent !important; appearance: none !important; padding: 0 !important; color: #000 !important; }
+            
+            /* إظهار التذييل النظيف أسفل جدول الإحصاء فقط عند الطباعة */
+            .print-footer-block { display: block !important; page-break-inside: avoid !important; }
+            
+            body:not(.cards-view-active) { background-color: #fff; }
+            body:not(.cards-view-active) @page { size: A4 landscape !important; margin: 0.6cm !important; }
+            body:not(.cards-view-active) #mainSystemContainer { display: block !important; width: 100% !important; }
+            body:not(.cards-view-active) .table-responsive { max-height: none !important; overflow: visible !important; border: none !important; width: 100% !important; }
+            body:not(.cards-view-active) .results-table { border-collapse: collapse !important; width: 100% !important; table-layout: fixed !important; }
+            body:not(.cards-view-active) .results-table th, body:not(.cards-view-active) .results-table td { position: static !important; box-shadow: none !important; padding: 4px 1px !important; font-size: 12px !important; border: 1px solid #000 !important; background-color: transparent !important; }
+            
+            body.cards-view-active { background-color: #fff !important; }
+            body.cards-view-active @page { size: A4 portrait !important; margin: 0.5cm !important; }
+            body.cards-view-active #mainSystemContainer { display: none !important; }
+            body.cards-view-active #cardsContainer { display: block !important; padding: 0 !important; margin: 0 !important; }
+            body.cards-view-active .report-card { width: 100% !important; height: 27.5cm !important; margin: 0 0 20px 0 !important; box-shadow: none !important; background-color: #fff !important; page-break-after: always !important; page-break-inside: avoid !important; }
+
+            body.reappear-report-active { background-color: #fff !important; }
+            body.reappear-report-active @page { size: A4 portrait !important; margin: 1cm !important; }
+            body.reappear-report-active #mainSystemContainer { display: none !important; }
+            body.reappear-report-active #cardsContainer { display: none !important; }
+            body.reappear-report-active #reappearReportContainer { display: block !important; background: #fff !important; padding: 0 !important; }
+            body.reappear-report-active .reappear-report-page { width: 100% !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; }
+            body.reappear-report-active .reappear-report-table thead { display: table-header-group; }
+            body.reappear-report-active .reappear-report-table tr { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="mainSystemContainer">
+        <!-- رأس الواجهة الرئيسي -->
+        <div class="new-header-container">
+            <div class="header-right">
+                <div class="header-row-inline">
+                    <span>إدارة مدرسة</span>
+                  <br>
+                    <input type="text" id="schoolName" class="editable-input-header"value="اسم المدرسة"onchange="saveSchoolInfo()">
+                </div>
+            </div>
+            
+            <div class="header-center">
+                <div class="header-row-inline">
+                    <span>نتائج امتحانات </span>
+                    <select id="examTypeSelect" class="custom-select" onchange="onExamTypeOrRoleOrClassChange()">
+                        <option value="الفصل الأول">الفصل الأول</option>
+                        <option value="نصف السنة" selected>نصف السنة</option>
+                        <option value="الفصل الثاني">الفصل الثاني</option>
+                        <option value="نهاية السنة">نهاية السنة</option>
+                    </select>
+                </div>
+                <div class="header-row-inline" style="margin: 3px 0;">
+                    <span>العام الدراسي </span>
+                    <input type="text" id="schoolYear" class="editable-input-header" style="width: 100px; text-align: center;" value="٢٠٢٥ - ٢٠٢٦" onchange="saveSchoolInfo()">
+                </div>
+                <div class="header-row-inline">
+                    <span>الدور / الشهر </span>
+                    <select id="examRoleSelect" class="custom-select" onchange="onExamTypeOrRoleOrClassChange()">
+                        <option value="الاول" selected>الاول</option>
+                        <option value="الثاني">الثاني</option>
+                        <option value="تشرين الأول">تشرين الأول</option>
+                        <option value="تشرين الثاني">تشرين الثاني</option>
+                        <option value="كانون الأول">كانون الأول</option>
+                        <option value="كانون الثاني">كانون الثاني</option>
+                        <option value="شباط">شباط</option>
+                        <option value="آذار">آذار</option>
+                        <option value="نيسان">نيسان</option>
+                        <option value="أيار">أيار</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="header-left">
+                <div class="header-row-inline">
+                    <span>الصف / </span>
+                    <select id="classSelect" class="custom-select" onchange="onClassOrDivisionChange()">
+                        <option value="الأول الابتدائي" selected>الأول الابتدائي</option>
+                        <option value="الثاني الابتدائي">الثاني الابتدائي</option>
+                        <option value="الثالث الابتدائي">الثالث الابتدائي</option>
+                        <option value="الرابع الابتدائي">الرابع الابتدائي</option>
+                        <option value="الخامس الابتدائي">الخامس الابتدائي</option>
+                        <option value="السادس الابتدائي">السادس الابتدائي</option>
+                    </select>
+                </div>
+                <div class="header-row-inline" style="margin-top: 10px; display: flex; gap: 8px; align-items: center;">
+                    <span>الشعبة / </span>
+                    <select id="divisionSelect" class="custom-select" onchange="onClassOrDivisionChange()">
+                        <option value="أ" selected>أ</option>
+                        <option value="ب">ب</option>
+                        <option value="ج">ج</option>
+                        <option value="د">د</option>
+                        <option value="بدون شعبة">بدون شعبة</option>
+                    </select>
+                    <!-- إضافة زر ترحيل الصف والشعبة الذكي بجانب قائمة الشعب -->
+            <!-- زر ترحيل الصف والشعبة الذكي بجانب قائمة الشعب -->
+<button class="btn btn-migrate no-print" style="padding: 2px 8px; font-size: 11px;" onclick="openMigrateModal()" title="ترحيل أو نسخ تلاميذ السجل الحالي لصف وشعبة أخرى">✈️ ترحيل الشعبة</button>
+              
+                </div>
+            </div>
+        </div>
+
+        <div class="controls-container">
+            <div class="controls-row">
+                <div class="action-btns">
+                    <button class="btn btn-add" onclick="addStudentRow()">➕ إضافة تلميذ واحد</button>
+                    <button class="btn btn-excel" onclick="openImportModal()">📥 استيراد التلاميذ (نسخ ولصق)</button>
+                    <button class="btn btn-cards" onclick="generateReportCards()">🎴 توليد كارتات النتائج</button>
+                    <button class="btn" style="background-color: #b7791f; color: #fff;" onclick="generateReappearFailReport()">📋 طباعة سجل المكملين والراسبين (كل الصفوف)</button>
+                    <button class="btn btn-print" onclick="window.print()">🖨️ طباعة الجدول الكامل</button>
+                    <button class="btn btn-backup" onclick="exportFullDatabase()">💾 تصدير قاعدة بيانات</button>
+                    <button class="btn btn-restore" onclick="triggerDatabaseImport()">🔄 استيراد نسخة احتياطية</button>
+                    <input type="file" id="dbImportFile" style="display: none;" accept=".json,application/json" onchange="importFullDatabase(this)">
+                    <button class="btn btn-clear-grades" style="background-color: #c0392b;" onclick="clearGradesForSelected()">☑️ حذف درجات المحددين</button>
+                    <button class="btn btn-clear-all" onclick="clearAllData()">🗑️ تفريغ الشعبة الحالية بالكامل</button>
+                    <div id="saveIndicator" class="save-indicator">💾 تم الحفظ التلقائي بنجاح</div>
+                </div>
+            </div>
+
+            <div class="controls-row">
+                <div class="search-container">
+                    <div class="search-box">
+                        <span style="font-weight: bold;">🔍 بحث بالاسم:</span>
+                        <input type="text" id="searchInput" class="search-input" oninput="combinedSearchAndFilter()" placeholder="اكتب اسم التلميذ...">
+                    </div>
+                    <div class="filter-group-box">
+                        <span style="font-weight: bold; color: #1e7e34;">🎯 تصفية حسب النتيجة:</span>
+                        <select id="resultFilterSelect" class="custom-select" onchange="combinedSearchAndFilter()">
+                            <option value="الكل" selected>عرض كل النتائج (بدون تصفية)</option>
+                            <option value="ناجح">🔍 التلاميذ الناجحون فقط</option>
+                            <option value="مكمل">🔍 التلاميذ المكملون فقط</option>
+                            <option value="راسب">🔍 التلاميذ الراسبون فقط</option>
+                        </select>
+                    </div>
+                    <div class="filter-group-box">
+                        <span style="font-weight: bold; color: #b7791f;">📘 تصفية حسب المادة:</span>
+                        <select id="subjectFilterSelect" class="custom-select" onchange="applySubjectFilter()">
+                            <option value="all" selected>عرض كل المواد</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="results-table" id="resultsTable">
+                <thead>
+                    <tr id="tableHeaderRow"></tr>
+                    <tr id="tableHeaderRow2"></tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+
+        <!-- جدول الإحصاء ونسب النجاح -->
+        <div class="stats-container" id="statsContainer"></div>
+
+        <!-- تذييل الطباعة النظيف -->
+        <div class="print-footer-block">
+            <div class="print-footer-content">
+                <span class="lbl-manager-footer">مدير المدرسة / <span class="lbl-manager-name"></span></span>
+                <div class="print-page-number">صفحة ١ من ١</div>
+            </div>
+        </div>
+
+        <!-- التذييل التفاعلي للواجهة -->
+        <div class="system-footer-view">
+            <div style="background: #fff; padding: 4px 10px; border: 1px solid #000;">الشاشة التفاعلية للمنظومة</div>
+            <div style="display: flex; gap: 40px;">
+                <p>مرشد الصف / <input type="text" id="managerTitle" class="editable-input-header" style="width: 140px;" value="اسم المرشد" onchange="saveFooterInfo()"></p>
+                <p>مدير المدرسة / <input type="text" id="managerName" class="editable-input-header" style="width: 140px;" value="مدير المدرسة" onchange="saveFooterInfo()"></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="cardsContainer"></div>
+    <div id="reappearReportContainer"></div>
+
+    <!-- مودال استيراد التلاميذ -->
+    <div id="importModal" class="custom-modal">
+        <div class="modal-content">
+            <h3 style="margin-top: 0;">📋 استيراد الأسماء والأرقام من إكسل</h3>
+            <p style="font-size: 13px; color: #555;">قومي بعمل نسخ (Copy) لعمودي رقم القيد واسم التلميذ معاً من ملف الإكسل ثم الصقيهما بالأسفل:</p>
+            <textarea id="pasteTextArea" class="paste-textarea" placeholder="رقم القيد [مسافة] اسم التلميذ"></textarea>
+            <div style="margin-top: 15px; display: flex; justify-content: flex-end; gap: 10px;">
+                <button class="btn btn-add" onclick="processPastedData()">استيراد البيانات</button>
+                <button class="btn" style="background-color: #6c757d; color: white;" onclick="closeImportModal()">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- مودال ترحيل الصف والشعبة الجديد -->
+    <div id="migrateModal" class="custom-modal">
+        <div class="modal-content" style="width: 40%;">
+            <h3 style="margin-top: 0; color: #0056b3;" id="migrateModalTitle">✈️ ترحيل كلي لبيانات السجل الحالي</h3>
+            <p style="font-size: 13px; color: #555;" id="migrateModalDesc">حددي الصف والشعبة المستهدفة لنقل جميع تلاميذ ودرجات السجل الحالي إليها مباشرة:</p>
+            
+            <div class="migrate-select-group">
+                <div class="migrate-select-item">
+                    <span>إلى الصف:</span>
+                    <select id="migrateClassSelect" class="custom-select" style="width: 60%;">
+                        <option value="الأول الابتدائي">الأول الابتدائي</option>
+                        <option value="الثاني الابتدائي">الثاني الابتدائي</option>
+                        <option value="الثالث الابتدائي">الثالث الابتدائي</option>
+                        <option value="الرابع الابتدائي">الرابع الابتدائي</option>
+                        <option value="الخامس الابتدائي">الخامس الابتدائي</option>
+                        <option value="السادس الابتدائي">السادس الابتدائي</option>
+                    </select>
+                </div>
+                <div class="migrate-select-item">
+                    <span>إلى الشعبة:</span>
+                    <select id="migrateDivisionSelect" class="custom-select" style="width: 60%;">
+                        <option value="أ">أ</option>
+                        <option value="ب">ب</option>
+                        <option value="ج">ج</option>
+                        <option value="د">د</option>
+                        <option value="بدون شعبة">بدون شعبة</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+                <button class="btn btn-migrate" onclick="executeDataMigration()">بدء الترحيل الفوري</button>
+                <button class="btn" style="background-color: #6c757d; color: white;" onclick="closeMigrateModal()">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- مودال ترحيل تلميذ واحد إلى صف وشعبة جديدة -->
+    <div id="migrateStudentModal" class="custom-modal">
+        <div class="modal-content" style="width: 40%;">
+            <h3 style="margin-top: 0; color: #0056b3;">✈️ ترحيل تلميذ إلى صف وشعبة جديدة</h3>
+            <p style="font-size: 13px; color: #555;">سيتم نقل التلميذ <b id="migrateStudentNameLabel" style="color:#0056b3;"></b> ودرجاته إلى الصف والشعبة المحددة، وحذفه من السجل الحالي:</p>
+
+            <div class="migrate-select-group">
+                <div class="migrate-select-item">
+                    <span>إلى الصف:</span>
+                    <select id="migrateStudentClassSelect" class="custom-select" style="width: 60%;">
+                        <option value="الأول الابتدائي">الأول الابتدائي</option>
+                        <option value="الثاني الابتدائي">الثاني الابتدائي</option>
+                        <option value="الثالث الابتدائي">الثالث الابتدائي</option>
+                        <option value="الرابع الابتدائي">الرابع الابتدائي</option>
+                        <option value="الخامس الابتدائي">الخامس الابتدائي</option>
+                        <option value="السادس الابتدائي">السادس الابتدائي</option>
+                    </select>
+                </div>
+                <div class="migrate-select-item">
+                    <span>إلى الشعبة:</span>
+                    <select id="migrateStudentDivisionSelect" class="custom-select" style="width: 60%;">
+                        <option value="أ">أ</option>
+                        <option value="ب">ب</option>
+                        <option value="ج">ج</option>
+                        <option value="د">د</option>
+                        <option value="بدون شعبة">بدون شعبة</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+                <button class="btn btn-migrate" onclick="executeSingleStudentMigration()">ترحيل التلميذ</button>
+                <button class="btn" style="background-color: #6c757d; color: white;" onclick="closeMigrateStudentModal()">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSubjects = [];
+        let activeSubjectFilterIndex = -1;
+
+        function getPassingGrade() {
+            const selectedClass = document.getElementById('classSelect').value;
+            if (["الأول الابتدائي", "الثاني الابتدائي", "الثالث الابتدائي", "الرابع الابتدائي"].includes(selectedClass)) {
+                return 5;
+            }
+            return 50;
+        }
+
+        function updateSubjectsList() {
+            const selectedClass = document.getElementById('classSelect').value;
+            if (["الأول الابتدائي", "الثاني الابتدائي"].includes(selectedClass)) {
+                currentSubjects = ["التربية الاسلامية", "اللغة العربية", "اللغة الانكليزية", "الرياضيات", "العلوم", "الأخلاقية", "الفنية", "التربية الرياضية"];
+            } else if (selectedClass === "الثالث الابتدائي") {
+                currentSubjects = ["التربية الاسلامية", "اللغة العربية", "اللغة الانكليزية", "الرياضيات", "العلوم", "الأخلاقية" , "الفنية", "التربية الرياضية"];
+            } else {
+                currentSubjects = ["التربية الاسلامية", "اللغة العربية", "اللغة الانكليزية", "الرياضيات", "الاجتماعيات", "العلوم", "الفنية", "التربية الرياضية"];
+            }
+        }
+
+        function toArabicDigits(num) {
+            const id = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+            return num.toString().replace(/[0-9]/g, function (w) { return id[+w]; });
+        }
+
+        function toEnglishDigits(str) {
+            return str.replace(/[٠-٩]/g, function (d) { return d.charCodeAt(0) - 1632; });
+        }
+
+        function forceArabicDigitsText(text) {
+            return text.replace(/[0-9]/g, function (ch) {
+                const arabicMap = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+                return arabicMap[parseInt(ch)];
+            });
+        }
+
+        function customRoundValue(value) {
+            let decimal = value - Math.floor(value);
+            if (decimal >= 0.5) { return Math.ceil(value); } 
+            else { return Math.floor(value); }
+        }
+
+        function convertTotalNumberToWords(num) {
+            if (isNaN(num) || num <= 0) return "";
+            if (num === 100) return "مئة";
+            const ones = ["", "واحد", "اثنان", "ثلاثة", "أربعة", "خمسة", "ستة", "سبعة", "ثمانية", "تسعة"];
+            const tens = ["", "عشرة", "عشرون", "ثلاثون", "أربعون", "خمسون", "ستون", "سبعون", "ثمانون", "تسعون"];
+            const teens = ["عشرة", "أحد عشر", "اثنا عشر", "ثلاثة عشر", "أربعة عشر", "خمسة عشر", "ستة عشر", "سبعة عشر", "ثمانية عشر", "تسعة عشر"];
+            const hundreds = ["", "مئة", "مئتان", "ثلاثمئة", "أربعمئة", "خمسمئة", "ستمئة", "سبعمئة", "ثمانمئة", "تسعمئة"];
+
+            if (num < 10) return ones[num];
+            if (num >= 10 && num < 20) return teens[num - 10];
+            if (num >= 20 && num < 100) {
+                let o = num % 10; let t = Math.floor(num / 10);
+                return (o === 0 ? tens[t] : ones[o] + " و" + tens[t]);
+            }
+            if (num >= 100 && num < 1000) {
+                let h = Math.floor(num / 100); let remainder = num % 100;
+                if (remainder === 0) return hundreds[h];
+                let remainderWords = "";
+                if (remainder < 10) remainderWords = ones[remainder];
+                else if (remainder >= 10 && remainder < 20) remainderWords = teens[remainder - 10];
+                else {
+                    let o = remainder % 10; let t = Math.floor(remainder / 10);
+                    remainderWords = (o === 0 ? tens[t] : ones[o] + " و" + tens[t]);
+                }
+                return hundreds[h] + " و" + remainderWords;
+            }
+            return num.toString();
+        }
+
+        function convertNumberToArabicWords(numStr) {
+            let cleanStr = toEnglishDigits(numStr.trim());
+            if (["غ", "غائب", "غائبة"].includes(cleanStr)) return "غائب";
+            let num = parseInt(cleanStr);
+            if (isNaN(num)) return "";
+            if (num === 0) return "صفر";
+            
+            if (getPassingGrade() === 5 && num <= 10) {
+                const smallNumbers = ["", "واحد", "اثنان", "ثلاثة", "أربعة", "خمسة", "ستة", "سبعة", "ثمانية", "تسعة", "عشرة"];
+                return smallNumbers[num];
+            }
+            return convertTotalNumberToWords(num);
+        }
+
+        function showSaveIndicator() {
+            const indicator = document.getElementById('saveIndicator');
+            indicator.style.display = 'inline-flex';
+            setTimeout(() => { indicator.style.display = 'none'; }, 800);
+        }
+
+        function updateDynamicPageCounter() {
+            const rows = document.querySelectorAll('.student-row');
+            let visibleRowsCount = 0;
+            rows.forEach(row => {
+                const nameInput = row.querySelector('.student-name-input');
+                if (row.style.display !== 'none' && nameInput && nameInput.value.trim() !== "") { visibleRowsCount++; }
+            });
+            let totalPages = Math.ceil(visibleRowsCount / 25) || 1;
+            
+            document.querySelectorAll('.print-page-number').forEach(el => {
+                el.innerText = `صفحة ١ من ${toArabicDigits(totalPages)}`;
+            });
+        }
+
+        function updateRowIndices() {
+            const rows = document.querySelectorAll('.student-row');
+            let visibleIndex = 1;
+            rows.forEach((row) => {
+                const indexCell = row.querySelector('.row-index');
+                if (indexCell && row.style.display !== 'none') {
+                    indexCell.innerText = toArabicDigits(visibleIndex);
+                    visibleIndex++;
+                }
+            });
+            updateDynamicPageCounter();
+        }
+
+        function combinedSearchAndFilter() {
+            const searchInput = document.getElementById('searchInput').value.trim().toLowerCase();
+            const selectedStatus = document.getElementById('resultFilterSelect').value;
+            const rows = document.querySelectorAll('.student-row');
+
+            rows.forEach(row => {
+                const nameInput = row.querySelector('.student-name-input');
+                const statusCell = row.querySelector('.status-field');
+                if (nameInput && statusCell) {
+                    const nameText = nameInput.value.toLowerCase();
+                    const statusText = statusCell.innerText.trim();
+                    const matchesName = nameText.includes(searchInput);
+                    let matchesStatus = (selectedStatus === "الكل") ? true : (statusText === selectedStatus);
+                    row.style.display = (matchesName && matchesStatus) ? '' : 'none';
+                }
+            });
+            updateRowIndices();
+        }
+
+        function renderTableStructures() {
+            const headerRow = document.getElementById('tableHeaderRow');
+            const headerRow2 = document.getElementById('tableHeaderRow2');
+            let headerHTML = `
+                <th class="sticky-index-col" rowspan="2" style="width:35px;">ت</th>
+                <th class="sticky-id-col" rowspan="2" style="width:80px;">رقم القيد</th>
+                <th class="sticky-name-col" rowspan="2" style="width:180px;">اسم التلميذ</th>`;
+            
+            currentSubjects.forEach((subject, idx) => {
+                headerHTML += `<th class="subject-col rotated-th" data-subject-idx="${idx}" rowspan="2"><span class="rotated-text">${subject}</span></th>`;
+            });
+            headerRow.innerHTML = headerHTML + `<th colspan="2">المجموع</th><th rowspan="2">النتيجة</th><th rowspan="2" style="font-size: 12px; width:120px;">مواد الإكمال</th><th rowspan="2" class="actions-col" style="width:170px;">إجراءات<br><label style="font-size:11px; font-weight:normal; display:inline-flex; align-items:center; gap:3px; margin-top:3px; cursor:pointer;"><input type="checkbox" id="selectAllRowsCheckbox" onchange="toggleSelectAllRows(this)"> تحديد الكل</label></th>`;
+            headerRow2.innerHTML = `<th class="total-sub-th">رقماً</th><th class="total-sub-th">كتابة</th>`;
+
+            const subjectFilterSelect = document.getElementById('subjectFilterSelect');
+            if (subjectFilterSelect) {
+                let optionsHTML = `<option value="all">عرض كل المواد</option>`;
+                currentSubjects.forEach((subject, idx) => {
+                    optionsHTML += `<option value="${idx}">${subject}</option>`;
+                });
+                subjectFilterSelect.innerHTML = optionsHTML;
+                subjectFilterSelect.value = "all";
+            }
+            activeSubjectFilterIndex = -1;
+
+            requestAnimationFrame(() => {
+                const row1Height = headerRow.getBoundingClientRect().height;
+                headerRow2.querySelectorAll('.total-sub-th').forEach(th => {
+                    th.style.top = row1Height + 'px';
+                });
+            });
+
+            const statsContainer = document.getElementById('statsContainer');
+            let statsHTML = `<table class="stats-table"><thead><tr><th style="background-color: #b3b3b3;">المادة</th>`;
+            currentSubjects.forEach(subject => { statsHTML += `<th class="subject-col rotated-th"><span class="rotated-text">${subject}</span></th>`; });
+            statsHTML += `<th style="background-color: #f2f2f2;">المجموع للشعبة</th></tr></thead><tbody><tr><td class="stats-title-col">المشتركون</td>`;
+            currentSubjects.forEach((_, idx) => { statsHTML += `<td id="stat-registered-${idx}">٠</td>`; });
+            statsHTML += `<td id="stat-registered-total">٠</td></tr><tr><td class="stats-title-col">الغائبون</td>`;
+            currentSubjects.forEach((_, idx) => { statsHTML += `<td id="stat-disabled-${idx}">٠</td>`; });
+            statsHTML += `<td id="stat-absent-total">٠</td></tr><tr><td class="stats-title-col">الناجحون</td>`;
+            currentSubjects.forEach((_, idx) => { statsHTML += `<td id="stat-passed-${idx}">٠</td>`; });
+            statsHTML += `<td id="stat-passed-total">٠</td></tr><tr><td class="stats-title-col">الراسبون</td>`;
+            currentSubjects.forEach((_, idx) => { statsHTML += `<td id="stat-failed-${idx}">٠</td>`; });
+            statsHTML += `<td id="stat-failed-total">٠</td></tr><tr><td class="stats-title-col">المكملون</td>`;
+            currentSubjects.forEach((_, idx) => { statsHTML += `<td id="stat-reappear-${idx}">-</td>`; });
+            statsHTML += `<td id="stat-reappear-total">٠</td></tr><tr style="background-color: #f9f9f9;"><td class="stats-title-col" style="color: #0056b3;">النسبة المئوية للشعبة</td>`;
+            currentSubjects.forEach((_, idx) => { statsHTML += `<td id="stat-percent-${idx}" style="color: #0056b3;">٠%</td>`; });
+            statsHTML += `<td id="stat-percent-total" style="color: #0056b3;">٠%</td></tr></tbody></table>`;
+            statsContainer.innerHTML = statsHTML;
+        }
+
+        function calculateResults() {
+            const rows = document.querySelectorAll('.student-row');
+            const subjectsCount = currentSubjects.length;
+            const passingGrade = getPassingGrade(); 
+            const examType = document.getElementById('examTypeSelect').value;
+            const examRole = document.getElementById('examRoleSelect').value;
+            
+            let regCount = new Array(subjectsCount).fill(0);
+            let absCount = new Array(subjectsCount).fill(0);
+            let passCount = new Array(subjectsCount).fill(0);
+            let failCountArr = new Array(subjectsCount).fill(0);
+
+            let totalSchoolRegistered = 0;
+            let totalSchoolPassed = 0;
+            let totalSchoolFailed = 0;
+            let totalSchoolReappear = 0;
+
+            rows.forEach(row => {
+                const nameInput = row.querySelector('.student-name-input');
+                if (!nameInput || nameInput.value.trim() === "") return; 
+
+                totalSchoolRegistered++;
+                const gradeInputs = row.querySelectorAll('.grade-input-field');
+                
+                let totalScore = 0;
+                let studentFailCount = 0;
+                let studentEmptyCells = 0;
+                let failedSubjects = [];
+                let failedSubjectIndexes = [];
+
+                gradeInputs.forEach((input, index) => {
+                    let val = input.value.trim();
+                    
+                    if (val === "") {
+                        studentEmptyCells++;
+                        input.classList.remove('fail-grade');
+                        return;
+                    }
+
+                    regCount[index]++;
+
+                    if (["غ", "غائب", "غائبة"].includes(val)) {
+                        absCount[index]++;
+                        studentFailCount++;
+                        failedSubjectIndexes.push(index);
+                        failedSubjects.push(currentSubjects[index] + " (غ)");
+                        input.classList.add('fail-grade');
+                        return; 
+                    }
+
+                    let cellText = toEnglishDigits(val);
+                    let grade = parseFloat(cellText);
+
+                    if (isNaN(grade)) {
+                        regCount[index]--;
+                        studentEmptyCells++;
+                        return;
+                    }
+
+                    totalScore += grade; 
+                    if (grade < passingGrade) {
+                        input.classList.add('fail-grade');
+                        studentFailCount++;
+                        failedSubjectIndexes.push(index);
+                        failedSubjects.push(currentSubjects[index]);
+                    } else {
+                        input.classList.remove('fail-grade');
+                        passCount[index]++;
+                    }
+                });
+
+                const totalField = row.querySelector('.total-field');
+                const totalWordsField = row.querySelector('.total-words-field');
+                const statusField = row.querySelector('.status-field');
+                const reappearField = row.querySelector('.reappear-subjects-field');
+
+                if (studentEmptyCells === gradeInputs.length) {
+                    totalField.innerText = "";
+                    totalWordsField.innerText = "";
+                    statusField.innerText = "";
+                    statusField.className = "status-field";
+                    reappearField.innerText = "-";
+                    totalSchoolRegistered--; 
+                    return;
+                }
+
+                statusField.className = "status-field";
+                let currentStatus = "ناجح";
+                if (studentFailCount === 0) { currentStatus = "ناجح"; } 
+                else if (studentFailCount === 1 || studentFailCount === 2) { currentStatus = "مكمل"; } 
+                else { currentStatus = "راسب"; }
+
+                if (examType === "نهاية السنة" && examRole === "الاول" && (currentStatus === "مكمل" || currentStatus === "راسب")) {
+                    totalField.innerText = "";
+                    totalWordsField.innerText = "";
+                } else {
+                    let roundedTotal = customRoundValue(totalScore);
+                    totalField.innerText = toArabicDigits(roundedTotal);
+                    totalWordsField.innerText = convertTotalNumberToWords(roundedTotal);
+                }
+
+                if (currentStatus === "ناجح") {
+                    statusField.innerText = "ناجح";
+                    statusField.classList.add('status-pass');
+                    totalSchoolPassed++;
+                    reappearField.innerText = "-";
+                } else if (currentStatus === "مكمل") {
+                    statusField.innerText = "مكمل";
+                    statusField.classList.add('status-reappear');
+                    totalSchoolReappear++;
+                    failedSubjectIndexes.forEach(idx => { failCountArr[idx]++; });
+                    reappearField.innerText = failedSubjects.join(" و ");
+                } else {
+                    statusField.innerText = "راسب";
+                    statusField.classList.add('status-fail');
+                    totalSchoolFailed++;
+                    failedSubjectIndexes.forEach(idx => { failCountArr[idx]++; });
+                    reappearField.innerText = "-";
+                }
+            });
+
+            for (let i = 0; i < subjectsCount; i++) {
+                if (document.getElementById(`stat-registered-${i}`)) document.getElementById(`stat-registered-${i}`).innerText = toArabicDigits(regCount[i]);
+                if (document.getElementById(`stat-disabled-${i}`)) document.getElementById(`stat-disabled-${i}`).innerText = toArabicDigits(absCount[i]);
+                if (document.getElementById(`stat-passed-${i}`)) document.getElementById(`stat-passed-${i}`).innerText = toArabicDigits(passCount[i]);
+                if (document.getElementById(`stat-failed-${i}`)) document.getElementById(`stat-failed-${i}`).innerText = toArabicDigits(failCountArr[i]);
+                if (document.getElementById(`stat-reappear-${i}`)) document.getElementById(`stat-reappear-${i}`).innerText = "-";
+                let percent = (regCount[i] > 0) ? Math.round((passCount[i] / regCount[i]) * 100) : 0;
+                if (document.getElementById(`stat-percent-${i}`)) document.getElementById(`stat-percent-${i}`).innerText = toArabicDigits(percent) + " %";
+            }
+
+            if (document.getElementById('stat-registered-total')) document.getElementById('stat-registered-total').innerText = toArabicDigits(totalSchoolRegistered);
+            if (document.getElementById('stat-passed-total')) document.getElementById('stat-passed-total').innerText = toArabicDigits(totalSchoolPassed);
+            if (document.getElementById('stat-failed-total')) document.getElementById('stat-failed-total').innerText = toArabicDigits(totalSchoolFailed);
+            if (document.getElementById('stat-reappear-total')) document.getElementById('stat-reappear-total').innerText = toArabicDigits(totalSchoolReappear);
+
+            let totalSchoolPercent = (totalSchoolRegistered > 0) ? Math.round((totalSchoolPassed / totalSchoolRegistered) * 100) : 0;
+            if (document.getElementById('stat-percent-total')) document.getElementById('stat-percent-total').innerText = toArabicDigits(totalSchoolPercent) + " %";
+            updateDynamicPageCounter();
+        }
+
+        function getNamesStorageKey(customClass, customDiv) {
+            const selectedClass = customClass || document.getElementById('classSelect').value;
+            const selectedDivision = customDiv || document.getElementById('divisionSelect').value;
+            return `studentsNamesOnlyData_${selectedClass}__${selectedDivision}`;
+        }
+
+        function getGradesStorageKey(customClass, customDiv) {
+            const selectedClass = customClass || document.getElementById('classSelect').value;
+            const selectedDivision = customDiv || document.getElementById('divisionSelect').value;
+            const examType = document.getElementById('examTypeSelect').value;
+            const examRole = document.getElementById('examRoleSelect').value;
+            return `studentsGradesData_${selectedClass}__${selectedDivision}__${examType}__${examRole}`;
+        }
+
+        function saveSchoolInfo() {
+            const yearInput = document.getElementById('schoolYear');
+            yearInput.value = forceArabicDigitsText(yearInput.value);
+
+            const schoolInfo = {
+                name: document.getElementById('schoolName').value.trim(),
+                year: yearInput.value.trim(),
+                examType: document.getElementById('examTypeSelect').value,
+                examRole: document.getElementById('examRoleSelect').value,
+                currentClass: document.getElementById('classSelect').value,
+                currentDivision: document.getElementById('divisionSelect').value
+            };
+            localStorage.setItem('schoolInfoGlobalData_v4', JSON.stringify(schoolInfo));
+            showSaveIndicator();
+        }
+
+        function onClassOrDivisionChange() {
+            document.getElementById('searchInput').value = "";
+            document.getElementById('resultFilterSelect').value = "الكل";
+            saveSchoolInfo();
+            updateSubjectsList();
+            renderTableStructures();
+            loadCurrentGroupData(); 
+        }
+
+        function onExamTypeOrRoleOrClassChange() {
+            document.getElementById('searchInput').value = "";
+            document.getElementById('resultFilterSelect').value = "الكل";
+            saveSchoolInfo();
+            loadCurrentGroupData(); 
+        }
+
+        function saveFooterInfo() {
+            const mName = document.getElementById('managerName').value.trim();
+            const mTitle = document.getElementById('managerTitle').value.trim();
+            
+            const footerInfo = { manager: mName, title: mTitle };
+            localStorage.setItem('footerInfoData', JSON.stringify(footerInfo));
+            
+            document.querySelectorAll('.lbl-manager-name').forEach(el => el.innerText = mName);
+            document.querySelectorAll('.lbl-manager-title').forEach(el => el.innerText = mTitle);
+            
+            showSaveIndicator();
+        }
+
+        function createRowElement(student, index) {
+            const tr = document.createElement('tr');
+            tr.className = 'student-row';
+            
+            let gradesHTML = '';
+            const subjectsCount = currentSubjects.length;
+            for(let i = 0; i < subjectsCount; i++) {
+                let val = (student.grades && student.grades[i] !== undefined) ? student.grades[i] : "";
+                const hideStyle = (activeSubjectFilterIndex !== -1 && activeSubjectFilterIndex !== i) ? ' style="display:none;"' : '';
+                gradesHTML += `<td data-subject-idx="${i}"${hideStyle}><input type="text" class="direct-input grade-input-field" value="${val}" oninput="onFieldInputHandler()" autocomplete="off"></td>`;
+            }
+
+            tr.innerHTML = `
+                <td class="row-index sticky-index-col">${toArabicDigits(index)}</td>
+                <td class="sticky-id-col id-input-cell"><input type="text" class="direct-input student-id-input" value="${student.id || ''}" oninput="onFieldInputHandler()" autocomplete="off"></td>
+                <td class="sticky-name-col name-input-cell"><input type="text" class="direct-input student-name-input" value="${student.name || ''}" oninput="onFieldInputHandler()" onchange="sortStudentsAlphabetically()" autocomplete="off"></td>
+                ${gradesHTML}
+                <td class="total-field" style="font-weight: bold;"></td>
+                <td class="total-words-field" style="font-weight: bold;"></td>
+                <td class="status-field"></td>
+                <td class="reappear-subjects-field" style="font-weight: bold; color: #990000; font-size: 11px;">-</td>
+                <td class="actions-col">
+                    <input type="checkbox" class="row-select-checkbox" onchange="onRowCheckboxChange()" title="تحديد هذا التلميذ" style="width:16px; height:16px; margin-left:6px; vertical-align:middle; cursor:pointer;">
+                    <button class="btn btn-migrate-row" onclick="openMigrateSingleModal(this)" title="ترحيل هذا التلميذ إلى صف وشعبة أخرى">✈️ ترحيل</button>
+                    <button class="btn btn-delete" onclick="deleteStudentRow(this)">حذف</button>
+                </td>
+            `;
+            return tr;
+        }
+
+        function onFieldInputHandler() {
+            calculateResults();
+            saveAllStudentsData();
+        }
+
+        function sortStudentsAlphabetically() {
+            const rows = Array.from(document.querySelectorAll('.student-row'));
+            
+            let studentsData = rows.map(row => {
+                const name = row.querySelector('.student-name-input').value.trim();
+                const id = row.querySelector('.student-id-input').value.trim();
+                const grades = Array.from(row.querySelectorAll('.grade-input-field')).map(input => input.value.trim());
+                return { id, name, grades };
+            });
+
+            studentsData = studentsData.filter(st => st.name !== "" || st.id !== "");
+            studentsData.sort((a, b) => a.name.localeCompare(b.name, 'ar'));
+
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            if (studentsData.length === 0) {
+                tbody.appendChild(createRowElement({ id: "", name: "", grades: new Array(currentSubjects.length).fill("") }, 1));
+            } else {
+                studentsData.forEach((student, index) => {
+                    tbody.appendChild(createRowElement(student, index + 1));
+                });
+            }
+
+            calculateResults();
+            saveAllStudentsData();
+            updateRowIndices();
+        }
+
+        function addStudentRow() {
+            const tbody = document.getElementById('tableBody');
+            const emptyGrades = new Array(currentSubjects.length).fill("");
+            const nextIndex = tbody.querySelectorAll('.student-row').length + 1;
+            
+            const tr = createRowElement({ id: "", name: "", grades: emptyGrades }, nextIndex);
+            tbody.appendChild(tr);
+            
+            updateRowIndices();
+            saveAllStudentsData();
+            tr.querySelector('.student-name-input').focus();
+        }
+
+        function deleteStudentRow(button) {
+            if (confirm("هل أنت متأكد من حذف هذا التلميذ؟")) {
+                button.closest('tr').remove();
+                updateRowIndices();
+                calculateResults();
+                saveAllStudentsData();
+            }
+        }
+
+        function applySubjectFilter() {
+            const select = document.getElementById('subjectFilterSelect');
+            const val = select.value;
+            activeSubjectFilterIndex = (val === "all") ? -1 : parseInt(val);
+
+            document.querySelectorAll('[data-subject-idx]').forEach(el => {
+                const idx = parseInt(el.dataset.subjectIdx);
+                el.style.display = (activeSubjectFilterIndex === -1 || idx === activeSubjectFilterIndex) ? '' : 'none';
+            });
+        }
+
+        function toggleSelectAllRows(checkbox) {
+            document.querySelectorAll('.row-select-checkbox').forEach(cb => {
+                cb.checked = checkbox.checked;
+            });
+        }
+
+        function onRowCheckboxChange() {
+            const allBoxes = document.querySelectorAll('.row-select-checkbox');
+            const checkedBoxes = document.querySelectorAll('.row-select-checkbox:checked');
+            const selectAllBox = document.getElementById('selectAllRowsCheckbox');
+            if (selectAllBox) {
+                selectAllBox.checked = allBoxes.length > 0 && allBoxes.length === checkedBoxes.length;
+            }
+        }
+
+        function clearGradesForSelected() {
+            const checkedRows = document.querySelectorAll('.row-select-checkbox:checked');
+            if (checkedRows.length === 0) {
+                alert("⚠️ الرجاء تحديد صف واحد على الأقل (مربع التحديد في عمود الإجراءات) قبل استخدام هذا الزر.");
+                return;
+            }
+            if (confirm(`🧹 مسح درجات ${toArabicDigits(checkedRows.length)} تلميذ/ة محدد؟`)) {
+                checkedRows.forEach(cb => {
+                    const row = cb.closest('tr');
+                    row.querySelectorAll('.grade-input-field').forEach(input => {
+                        input.value = "";
+                        input.classList.remove('fail-grade');
+                    });
+                    cb.checked = false;
+                });
+                const selectAllBox = document.getElementById('selectAllRowsCheckbox');
+                if (selectAllBox) selectAllBox.checked = false;
+                calculateResults();
+                saveAllStudentsData();
+                alert("✅ تم مسح الدرجات بنجاح.");
+            }
+        }
+
+        function clearAllData() {
+            if (confirm(`⚠️ تفريغ السجل الحالي بالكامل؟`)) {
+                localStorage.removeItem(getNamesStorageKey());
+                localStorage.removeItem(getGradesStorageKey());
+                const tbody = document.getElementById('tableBody');
+                tbody.innerHTML = '';
+                tbody.appendChild(createRowElement({ id: "", name: "", grades: new Array(currentSubjects.length).fill("") }, 1));
+                calculateResults();
+                saveAllStudentsData();
+            }
+        }
+
+        function openImportModal() {
+            document.getElementById('pasteTextArea').value = '';
+            document.getElementById('importModal').style.display = 'block';
+            document.getElementById('pasteTextArea').focus();
+        }
+
+        function closeImportModal() { document.getElementById('importModal').style.display = 'none'; }
+
+        /* دوال نافذة الترحيل الجديدة */
+        function openMigrateModal() {
+            document.getElementById('migrateClassSelect').value = document.getElementById('classSelect').value;
+            document.getElementById('migrateDivisionSelect').value = document.getElementById('divisionSelect').value;
+
+            const selectedCount = document.querySelectorAll('.row-select-checkbox:checked').length;
+            const titleEl = document.getElementById('migrateModalTitle');
+            const descEl = document.getElementById('migrateModalDesc');
+            if (selectedCount > 0) {
+                titleEl.innerText = `✈️ ترحيل التلاميذ المحددين (${toArabicDigits(selectedCount)})`;
+                descEl.innerText = "حددي الصف والشعبة المستهدفة لنقل التلاميذ المحددين فقط إليها، مع الحفاظ على تلاميذ تلك الشعبة الموجودين مسبقاً:";
+            } else {
+                titleEl.innerText = "✈️ ترحيل كلي لبيانات السجل الحالي";
+                descEl.innerText = "لا يوجد تحديد حالياً، لذا سيتم نقل جميع تلاميذ السجل الحالي. حددي الصف والشعبة المستهدفة:";
+            }
+
+            document.getElementById('migrateModal').style.display = 'block';
+        }
+
+        function closeMigrateModal() { document.getElementById('migrateModal').style.display = 'none'; }
+
+        function executeDataMigration() {
+            const targetClass = document.getElementById('migrateClassSelect').value;
+            const targetDiv = document.getElementById('migrateDivisionSelect').value;
+            
+            const sourceClass = document.getElementById('classSelect').value;
+            const sourceDiv = document.getElementById('divisionSelect').value;
+
+            if (targetClass === sourceClass && targetDiv === sourceDiv) {
+                alert("❌ الخطأ: لقد اخترت نفس الصف ونفس الشعبة الحالية! يرجى اختيار صف أو شعبة مختلفة للترحيل.");
+                return;
+            }
+
+            const allRows = Array.from(document.querySelectorAll('.student-row'));
+            const selectedRows = allRows.filter(row => {
+                const cb = row.querySelector('.row-select-checkbox');
+                return cb && cb.checked;
+            });
+            const rowsToMigrate = selectedRows.length > 0 ? selectedRows : allRows;
+            const isPartial = selectedRows.length > 0;
+            const sameClass = (targetClass === sourceClass);
+
+            const namesData = [];
+            const gradesData = [];
+            let validCount = 0;
+            let migratedRowsElements = [];
+
+            rowsToMigrate.forEach(row => {
+                const nameInput = row.querySelector('.student-name-input');
+                if (!nameInput || nameInput.value.trim() === "") return;
+
+                validCount++;
+                const idInput = row.querySelector('.student-id-input');
+                const id = idInput ? idInput.value.trim() : "";
+                const name = nameInput.value.trim();
+                
+                const grades = [];
+                row.querySelectorAll('.grade-input-field').forEach(input => { 
+                    grades.push(sameClass ? input.value.trim() : ""); 
+                });
+
+                namesData.push({ id, name });
+                gradesData.push({ id, grades });
+                migratedRowsElements.push(row);
+            });
+
+            if (validCount === 0) {
+                alert("⚠️ لا توجد بيانات تلاميذ أو أسماء صالحة لترحيلها. الرجاء تحديد تلاميذ (مربع التحديد في عمود الإجراءات) أو التأكد من وجود بيانات في السجل الحالي.");
+                closeMigrateModal();
+                return;
+            }
+
+            const gradesNote = sameClass ? " (مع الدرجات لأنه نفس الصف)" : " (الاسم ورقم القيد فقط دون الدرجات لاختلاف الصف)";
+            const confirmMsg = isPartial
+                ? `هل أنتِ متأكدة من ترحيل (${toArabicDigits(validCount)}) تلميذ/ة محدد${gradesNote} من [${sourceClass} - شعبة ${sourceDiv}] إلى [${targetClass} - شعبة ${targetDiv}]؟`
+                : `هل أنتِ متأكدة من ترحيل جميع تلاميذ [${sourceClass} - شعبة ${sourceDiv}] (${toArabicDigits(validCount)})${gradesNote} إلى [${targetClass} - شعبة ${targetDiv}]؟`;
+
+            if (confirm(confirmMsg)) {
+                
+                const targetNamesKey = getNamesStorageKey(targetClass, targetDiv);
+                const targetGradesKey = getGradesStorageKey(targetClass, targetDiv);
+
+                let existingNames = [];
+                let existingGrades = [];
+                try { existingNames = JSON.parse(localStorage.getItem(targetNamesKey)) || []; } catch (e) { existingNames = []; }
+                try { existingGrades = JSON.parse(localStorage.getItem(targetGradesKey)) || []; } catch (e) { existingGrades = []; }
+
+                const mergedNames = existingNames.concat(namesData);
+                const mergedGrades = existingGrades.concat(gradesData);
+
+                // دمج البيانات المرحّلة مع التلاميذ الموجودين مسبقاً في الصف/الشعبة المستهدفة (وليست استبدالاً)
+                localStorage.setItem(targetNamesKey, JSON.stringify(mergedNames));
+                localStorage.setItem(targetGradesKey, JSON.stringify(mergedGrades));
+
+                // حذف التلاميذ المرحّلين من السجل الحالي (نقل فعلي)
+                migratedRowsElements.forEach(row => row.remove());
+
+                document.querySelectorAll('.row-select-checkbox').forEach(cb => cb.checked = false);
+                const selectAllBox = document.getElementById('selectAllRowsCheckbox');
+                if (selectAllBox) selectAllBox.checked = false;
+
+                calculateResults();
+                saveAllStudentsData();
+
+                const successNote = sameClass ? "مع درجاتهم" : "بالاسم ورقم القيد فقط دون الدرجات لاختلاف الصف";
+                alert(`✅ تم ترحيل (${toArabicDigits(validCount)}) تلميذ/ة بنجاح إلى [${targetClass} - شعبة ${targetDiv}] ${successNote}، مع الحفاظ على التلاميذ الموجودين مسبقاً في تلك الشعبة.`);
+                closeMigrateModal();
+            }
+        }
+
+        /* دوال نافذة ترحيل تلميذ واحد */
+        let studentRowToMigrate = null;
+
+        function openMigrateSingleModal(button) {
+            const row = button.closest('tr');
+            const nameInput = row.querySelector('.student-name-input');
+            const studentName = nameInput ? nameInput.value.trim() : "";
+
+            if (studentName === "") {
+                alert("⚠️ الرجاء إدخال اسم التلميذ أولاً قبل الترحيل.");
+                return;
+            }
+
+            studentRowToMigrate = row;
+            document.getElementById('migrateStudentNameLabel').innerText = studentName;
+            document.getElementById('migrateStudentClassSelect').value = document.getElementById('classSelect').value;
+            document.getElementById('migrateStudentDivisionSelect').value = document.getElementById('divisionSelect').value;
+            document.getElementById('migrateStudentModal').style.display = 'block';
+        }
+
+        function closeMigrateStudentModal() {
+            document.getElementById('migrateStudentModal').style.display = 'none';
+            studentRowToMigrate = null;
+        }
+
+        function executeSingleStudentMigration() {
+            if (!studentRowToMigrate) return;
+
+            const targetClass = document.getElementById('migrateStudentClassSelect').value;
+            const targetDiv = document.getElementById('migrateStudentDivisionSelect').value;
+
+            const sourceClass = document.getElementById('classSelect').value;
+            const sourceDiv = document.getElementById('divisionSelect').value;
+
+            if (targetClass === sourceClass && targetDiv === sourceDiv) {
+                alert("❌ الخطأ: لقد اخترت نفس الصف ونفس الشعبة الحالية! يرجى اختيار صف أو شعبة مختلفة للترحيل.");
+                return;
+            }
+
+            const nameInput = studentRowToMigrate.querySelector('.student-name-input');
+            const idInput = studentRowToMigrate.querySelector('.student-id-input');
+            const studentName = nameInput ? nameInput.value.trim() : "";
+            const studentId = idInput ? idInput.value.trim() : "";
+
+            if (studentName === "") {
+                alert("⚠️ لا يوجد اسم صالح لهذا التلميذ لترحيله.");
+                return;
+            }
+
+            const grades = [];
+            studentRowToMigrate.querySelectorAll('.grade-input-field').forEach(input => {
+                grades.push(input.value.trim());
+            });
+            const sameClass = (targetClass === sourceClass);
+            const gradesToMigrate = sameClass ? grades : new Array(grades.length).fill("");
+
+            const confirmMsg = sameClass
+                ? `هل أنتِ متأكدة من ترحيل التلميذ "${studentName}" (مع درجاته) من [${sourceClass} - شعبة ${sourceDiv}] إلى [${targetClass} - شعبة ${targetDiv}]؟`
+                : `هل أنتِ متأكدة من ترحيل التلميذ "${studentName}" (الاسم ورقم القيد فقط، دون الدرجات لاختلاف الصف) من [${sourceClass} - شعبة ${sourceDiv}] إلى [${targetClass} - شعبة ${targetDiv}]؟`;
+
+            if (!confirm(confirmMsg)) {
+                return;
+            }
+
+            // إضافة التلميذ إلى قوائم الصف والشعبة الجديدة دون حذف من هم موجودون هناك مسبقاً
+            const targetNamesKey = `studentsNamesOnlyData_${targetClass}__${targetDiv}`;
+            const examType = document.getElementById('examTypeSelect').value;
+            const examRole = document.getElementById('examRoleSelect').value;
+            const targetGradesKey = `studentsGradesData_${targetClass}__${targetDiv}__${examType}__${examRole}`;
+
+            const existingTargetNames = localStorage.getItem(targetNamesKey);
+            const targetNamesData = existingTargetNames ? JSON.parse(existingTargetNames) : [];
+
+            const existingTargetGrades = localStorage.getItem(targetGradesKey);
+            const targetGradesData = existingTargetGrades ? JSON.parse(existingTargetGrades) : [];
+
+            targetNamesData.push({ id: studentId, name: studentName });
+            targetGradesData.push({ id: studentId, grades: gradesToMigrate });
+
+            localStorage.setItem(targetNamesKey, JSON.stringify(targetNamesData));
+            localStorage.setItem(targetGradesKey, JSON.stringify(targetGradesData));
+
+            // حذف التلميذ من السجل الحالي بعد ترحيله بنجاح
+            studentRowToMigrate.remove();
+            updateRowIndices();
+            calculateResults();
+            saveAllStudentsData();
+
+            const successMsg = sameClass
+                ? `✅ تم ترحيل التلميذ "${studentName}" مع درجاته بنجاح إلى [${targetClass} - شعبة ${targetDiv}].`
+                : `✅ تم ترحيل التلميذ "${studentName}" (الاسم ورقم القيد فقط) بنجاح إلى [${targetClass} - شعبة ${targetDiv}].`;
+            alert(successMsg);
+            closeMigrateStudentModal();
+        }
+
+        function processPastedData() {
+            const pasteArea = document.getElementById('pasteTextArea');
+            const rawText = pasteArea.value;
+            if (!rawText.trim()) return alert("الرجاء لصق البيانات أولاً.");
+
+            const lines = rawText.split('\n');
+            const tbody = document.getElementById('tableBody');
+            
+            if (tbody.querySelectorAll('.student-row').length === 1 && tbody.querySelector('.student-name-input').value.trim() === "") {
+                tbody.innerHTML = '';
+            }
+
+            lines.forEach(line => {
+                if (!line.trim()) return;
+                const parts = line.split('\t');
+                let examId = parts.length >= 2 ? forceArabicDigitsText(parts[0].trim()) : "";
+                let studentName = parts.length >= 2 ? parts[1].trim() : parts[0].trim();
+                
+                if (studentName === "") return;
+                const tr = createRowElement({ id: examId, name: studentName, grades: new Array(currentSubjects.length).fill("") }, tbody.querySelectorAll('.student-row').length + 1);
+                tbody.appendChild(tr);
+            });
+
+            calculateResults();
+            saveAllStudentsData();
+            closeImportModal();
+        }
+
+
+        // حفظ النسخة الاحتياطية: على الآيباد داخل التطبيق المثبّت تُستخدم نافذة المشاركة (احفظ في الملفات)، وغير ذلك تنزيل عادي
+        function downloadBackupFile(text, filename) {
+            const blob = new Blob([text], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+        }
+        function saveBackupFile(text, filename) {
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+            const isStandalone = window.navigator.standalone === true || (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches);
+            try {
+                const file = new File([text], filename, { type: "application/json" });
+                if (isIOS && isStandalone && navigator.canShare && navigator.canShare({ files: [file] })) {
+                    navigator.share({ files: [file], title: filename }).catch(function(err) {
+                        if (!err || err.name !== "AbortError") downloadBackupFile(text, filename);
+                    });
+                    return;
+                }
+            } catch (e) {}
+            downloadBackupFile(text, filename);
+        }
+
+        function exportFullDatabase() {
+            const backupData = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('studentsNamesOnlyData_') || key.startsWith('studentsGradesData_') || ['schoolInfoGlobalData_v4', 'footerInfoData'].includes(key)) {
+                    backupData[key] = localStorage.getItem(key);
+                }
+            }
+            saveBackupFile(JSON.stringify(backupData), `منظومة_النتائج_نسخة_احتياطية.json`);
+        }
+
+        function triggerDatabaseImport() { document.getElementById('dbImportFile').click(); }
+
+        function importFullDatabase(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (confirm("⚠️ استبدال البيانات بالنسخة الاحتياطية؟")) {
+                        for (let i = localStorage.length - 1; i >= 0; i--) {
+                            const key = localStorage.key(i);
+                            if (key.startsWith('studentsNamesOnlyData_') || key.startsWith('studentsGradesData_') || ['schoolInfoGlobalData_v4', 'footerInfoData'].includes(key)) {
+                                localStorage.removeItem(key);
+                            }
+                        }
+                        for (const key in importedData) { localStorage.setItem(key, importedData[key]); }
+                        location.reload(); 
+                    }
+                } catch (err) { alert("الملف غير صالح."); }
+            };
+            reader.readAsText(file);
+            input.value = ''; 
+        }
+
+        function generateReportCards() {
+            const allRows = Array.from(document.querySelectorAll('.student-row'));
+            const selectedRows = allRows.filter(row => {
+                const cb = row.querySelector('.row-select-checkbox');
+                return cb && cb.checked;
+            });
+            const rows = selectedRows.length > 0 ? selectedRows : allRows;
+            const schoolName = document.getElementById('schoolName').value.trim();
+            const schoolYear = document.getElementById('schoolYear').value.trim();
+            const examType = document.getElementById('examTypeSelect').value;
+            const examRole = document.getElementById('examRoleSelect').value;
+            const className = document.getElementById('classSelect').value;
+            const divisionName = document.getElementById('divisionSelect').value;
+            const passingGrade = getPassingGrade();
+            const managerName = document.getElementById('managerName').value.trim();
+            const managerTitle = document.getElementById('managerTitle').value.trim();
+
+            let validStudentsCount = 0;
+            let cardsHTML = `
+                <div style="text-align: center; margin-bottom: 25px;" class="no-print-btn">
+                    <button class="btn btn-print" style="padding: 12px 25px; font-size: 15px; background-color: #2c3e50; color: white;" onclick="window.print()">🖨️ طباعة الكارتات</button>
+                    <button class="btn" style="background-color: #6c757d; color: white; padding: 12px 25px; font-size: 15px; margin-right: 10px;" onclick="closeCardsView()">🔙 العودة</button>
+                </div>
+            `;
+
+            rows.forEach(row => {
+                const nameInput = row.querySelector('.student-name-input');
+                if (!nameInput || nameInput.value.trim() === "") return; 
+
+                validStudentsCount++;
+                const name = nameInput.value.trim();
+                const examId = row.querySelector('.student-id-input').value.trim() || '';
+                
+                const totalScore = row.querySelector('.total-field').innerText.trim();
+                const totalWords = row.querySelector('.total-words-field').innerText.trim();
+                
+                const status = row.querySelector('.status-field').innerText.trim() || 'معلق';
+                const reappearSubjects = row.querySelector('.reappear-subjects-field').innerText.trim();
+
+                cardsHTML += `
+                    <div class="report-card">
+                        <div class="card-header-new">
+                            <div class="card-header-right">جمهورية العراق<br>وزارة التربية<br>المديرية العامة للتربية في محافظة بابل</div>
+                            <div class="card-header-center-box">
+                                <h2>بطاقة درجات امتحانات ${examType}</h2>
+                                <p>العام الدراسي: ${schoolYear}</p>
+                                <p>الدور / الشهر: ${examRole}</p>
+                            </div>
+                            <div class="card-header-left">
+                                <span>مدرسة<br> ${schoolName} </span>
+                            </div>
+                        </div>
+                        <div class="card-info-grid">
+                            <div class="card-info-item">اسم التلميذ: <span>${name}</span></div>
+                            <div class="card-info-item">رقم القيد: <span>${examId}</span></div>
+                            <div class="card-info-item">الصف: <span>${className}</span></div>
+                            <div class="card-info-item">الشعبة: <span>${divisionName}</span></div>
+                        </div>
+                        <table class="card-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40%; text-align: center;">المادة الدراسية</th>
+                                    <th style="width: 20%; text-align: center;">الدرجة رقماً</th>
+                                    <th style="width: 25%; text-align: center;">الدرجة كتابة</th>
+                                    <th style="width: 15%; text-align: center;">النتيجة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+
+                row.querySelectorAll('.grade-input-field').forEach((input, idx) => {
+                    const gradeVal = input.value.trim();
+                    let subjectStatus = "ناجح";
+                    let wordsGrade = convertNumberToArabicWords(gradeVal);
+                    
+                    if (gradeVal === "") {
+                        subjectStatus = "-";
+                        wordsGrade = "-";
+                    } else if (["غ", "غائب", "غائبة"].includes(gradeVal)) {
+                        subjectStatus = "غائب";
+                        wordsGrade = "غائب";
+                    } else {
+                        let parsed = parseFloat(toEnglishDigits(gradeVal));
+                        if (!isNaN(parsed) && parsed < passingGrade) { subjectStatus = "راسب"; }
+                    }
+
+                    cardsHTML += `
+                        <tr>
+                            <td class="card-subject-name">${currentSubjects[idx]}</td>
+                            <td class="card-grade-highlight" style="${subjectStatus === 'راسب' || subjectStatus === 'غائب' ? 'color: #990000 !important; text-decoration: underline; text-decoration-color: #990000; text-decoration-style: solid; text-decoration-thickness: 1px;' : ''}">${gradeVal || '-'}</td>
+                            <td class="card-grade-word" style="color: #000; font-size: 15px;">${wordsGrade}</td>
+                            <td class="card-grade-status" style="${subjectStatus === 'راسب' || subjectStatus === 'غائب' ? 'color: #990000;' : 'color: #27ae60;'}">${subjectStatus}</td>
+                        </tr>
+                    `;
+                });
+
+                cardsHTML += `
+                            </tbody>
+                        </table>
+                        <div class="card-summary">
+                            <div class="card-summary-row">
+                                <div>المجموع الكلي (رقماً): <span style="font-size: 24px; color: #2c3e50;">${totalScore || '-'}</span></div>
+                                <div>النتيجة النهائية: <span style="font-size: 20px; ${status === 'ناجح' ? 'color: #27ae60;' : 'color: #990000;'}">${status}</span></div>
+                            </div>
+                            <div class="card-summary-words-row">
+                                <span>المجموع الكلي (كتابة):</span>
+                                <span style="color: #2c3e50; font-size:17px;">${totalWords || '-'}</span>
+                            </div>
+                            <div style="font-size: 14px; margin-top: 4px;">مواد الإكمال: <span style="color: #990000;">${reappearSubjects}</span></div>
+                        </div>
+                        <div class="card-footer-signatures">
+                            <div class="sig-block"><div class="sig-space"></div><span>مرشد الصف / ${managerTitle}</span></div>
+                            <div class="sig-block"><div class="sig-space"></div><span>مدير المدرسة / ${managerName}</span></div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            if (validStudentsCount === 0) return alert("⚠️ لا توجد بيانات تلاميذ لتوليد الكروت.");
+            document.querySelectorAll('.row-select-checkbox').forEach(cb => cb.checked = false);
+            const selectAllBox = document.getElementById('selectAllRowsCheckbox');
+            if (selectAllBox) selectAllBox.checked = false;
+            document.body.classList.add('cards-view-active');
+            document.getElementById('mainSystemContainer').style.display = 'none';
+            const cardsContainer = document.getElementById('cardsContainer');
+            cardsContainer.innerHTML = cardsHTML;
+            cardsContainer.style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+
+        function closeCardsView() {
+            document.body.classList.remove('cards-view-active');
+            document.getElementById('cardsContainer').style.display = 'none';
+            document.getElementById('mainSystemContainer').style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+
+        function getSubjectsForClassName(cls) {
+            if (["الأول الابتدائي", "الثاني الابتدائي"].includes(cls)) {
+                return ["التربية الاسلامية", "اللغة العربية", "اللغة الانكليزية", "الرياضيات", "العلوم", "الأخلاقية", "الفنية", "التربية الرياضية"];
+            } else if (cls === "الثالث الابتدائي") {
+                return ["التربية الاسلامية", "اللغة العربية", "اللغة الانكليزية", "الرياضيات", "العلوم", "الأخلاقية", "الفنية", "التربية الرياضية"];
+            }
+            return ["التربية الاسلامية", "اللغة العربية", "اللغة الانكليزية", "الرياضيات", "الاجتماعيات", "العلوم", "الفنية", "التربية الرياضية"];
+        }
+
+        function getPassingGradeForClassName(cls) {
+            return ["الأول الابتدائي", "الثاني الابتدائي", "الثالث الابتدائي", "الرابع الابتدائي"].includes(cls) ? 5 : 50;
+        }
+
+        function evaluateStudentForReport(gradesArr, subjects, passingGrade) {
+            let studentFailCount = 0;
+            let studentEmptyCells = 0;
+            let failedSubjects = [];
+            let failedSubjectNames = [];
+
+            subjects.forEach((subjectName, index) => {
+                let val = (gradesArr[index] !== undefined) ? String(gradesArr[index]).trim() : "";
+
+                if (val === "") { studentEmptyCells++; return; }
+
+                if (["غ", "غائب", "غائبة"].includes(val)) {
+                    studentFailCount++;
+                    failedSubjects.push(subjectName + " (غ)");
+                    failedSubjectNames.push(subjectName);
+                    return;
+                }
+
+                let grade = parseFloat(toEnglishDigits(val));
+                if (isNaN(grade)) { studentEmptyCells++; return; }
+
+                if (grade < passingGrade) {
+                    studentFailCount++;
+                    failedSubjects.push(subjectName);
+                    failedSubjectNames.push(subjectName);
+                }
+            });
+
+            if (studentEmptyCells === subjects.length) return { status: "", failedSubjects: [], failedSubjectNames: [] };
+
+            let status = "ناجح";
+            if (studentFailCount === 0) status = "ناجح";
+            else if (studentFailCount === 1 || studentFailCount === 2) status = "مكمل";
+            else status = "راسب";
+
+            return { status, failedSubjects, failedSubjectNames };
+        }
+
+        function generateReappearFailReport() {
+            const classOptions = Array.from(document.getElementById('classSelect').options).map(o => o.value);
+            const divisionOptions = Array.from(document.getElementById('divisionSelect').options).map(o => o.value);
+
+            const schoolName = document.getElementById('schoolName').value.trim();
+            const schoolYear = document.getElementById('schoolYear').value.trim();
+            const examType = document.getElementById('examTypeSelect').value;
+            const examRole = document.getElementById('examRoleSelect').value;
+            const managerName = document.getElementById('managerName').value.trim();
+
+            let reportRows = [];
+            let classDivStats = {};
+            let subjectsUnion = [];
+            let grandReappear = 0;
+            let grandFail = 0;
+
+            classOptions.forEach(cls => {
+                divisionOptions.forEach(div => {
+                    const namesKey = getNamesStorageKey(cls, div);
+                    const gradesKey = getGradesStorageKey(cls, div);
+
+                    const savedNames = localStorage.getItem(namesKey);
+                    const savedGrades = localStorage.getItem(gradesKey);
+                    if (!savedNames) return;
+
+                    const namesList = JSON.parse(savedNames);
+                    const gradesList = savedGrades ? JSON.parse(savedGrades) : [];
+                    if (namesList.length === 0) return;
+
+                    const subjects = getSubjectsForClassName(cls);
+                    const passingGrade = getPassingGradeForClassName(cls);
+                    const classDivLabel = div === "بدون شعبة" ? cls : `${cls} / ${div}`;
+
+                    subjects.forEach(s => { if (!subjectsUnion.includes(s)) subjectsUnion.push(s); });
+
+                    namesList.forEach((stName, index) => {
+                        if (!stName.name || stName.name.trim() === "") return;
+                        const gradesArr = (gradesList[index] && gradesList[index].grades) ? gradesList[index].grades : [];
+                        const result = evaluateStudentForReport(gradesArr, subjects, passingGrade);
+
+                        if (result.status === "مكمل" || result.status === "راسب") {
+                            reportRows.push({
+                                name: stName.name.trim(),
+                                classDiv: classDivLabel,
+                                subjects: result.failedSubjects.length > 0 ? result.failedSubjects.join('، ') : (result.status === "راسب" ? "جميع المواد" : "-"),
+                                status: result.status
+                            });
+
+                            if (!classDivStats[classDivLabel]) classDivStats[classDivLabel] = { reappear: 0, fail: 0, subjectFail: {}, subjectsList: subjects };
+
+                            if (result.status === "مكمل") {
+                                classDivStats[classDivLabel].reappear++;
+                                grandReappear++;
+                            } else {
+                                classDivStats[classDivLabel].fail++;
+                                grandFail++;
+                            }
+                            result.failedSubjectNames.forEach(subjName => {
+                                classDivStats[classDivLabel].subjectFail[subjName] = (classDivStats[classDivLabel].subjectFail[subjName] || 0) + 1;
+                            });
+                        }
+                    });
+                });
+            });
+
+            let bodyRowsHTML = "";
+            if (reportRows.length === 0) {
+                bodyRowsHTML = `<tr><td colspan="6" class="rr-empty-note">لا يوجد تلاميذ مكملون أو راسبون ضمن البيانات المسجلة حالياً</td></tr>`;
+            } else {
+                reportRows.forEach((r, idx) => {
+                    bodyRowsHTML += `
+                        <tr>
+                            <td>${toArabicDigits(idx + 1)}</td>
+                            <td class="rr-name-col">${r.name}</td>
+                            <td>${r.classDiv}</td>
+                            <td class="rr-subjects-col">${r.subjects}</td>
+                            <td style="font-weight: bold; color: ${r.status === 'راسب' ? '#990000' : '#b7791f'};">${r.status}</td>
+                            <td></td>
+                        </tr>`;
+                });
+            }
+
+            // ===== جدول إحصاء المكملين والراسبين حسب الشعبة =====
+            const classDivLabels = Object.keys(classDivStats);
+            let stats1RowsHTML = "";
+            if (classDivLabels.length === 0) {
+                stats1RowsHTML = `<tr><td colspan="4" class="rr-empty-note">لا توجد بيانات</td></tr>`;
+            } else {
+                classDivLabels.forEach(label => {
+                    const s = classDivStats[label];
+                    stats1RowsHTML += `
+                        <tr>
+                            <td class="rr-name-col">${label}</td>
+                            <td>${toArabicDigits(s.reappear)}</td>
+                            <td>${toArabicDigits(s.fail)}</td>
+                            <td style="font-weight:bold;">${toArabicDigits(s.reappear + s.fail)}</td>
+                        </tr>`;
+                });
+                stats1RowsHTML += `
+                    <tr style="background-color:#dbe9ff; font-weight:bold;">
+                        <td>المجموع الكلي</td>
+                        <td>${toArabicDigits(grandReappear)}</td>
+                        <td>${toArabicDigits(grandFail)}</td>
+                        <td>${toArabicDigits(grandReappear + grandFail)}</td>
+                    </tr>`;
+            }
+
+            // ===== جدول إحصاء الراسبين حسب المادة الدراسية للصف والشعبة =====
+            let stats2HeaderHTML = `<th style="width:14%;">الصف والشعبة</th>`;
+            subjectsUnion.forEach(s => { stats2HeaderHTML += `<th>${s}</th>`; });
+            stats2HeaderHTML += `<th style="width:10%;">المجموع الكلي</th>`;
+
+            let stats2RowsHTML = "";
+            if (classDivLabels.length === 0) {
+                stats2RowsHTML = `<tr><td colspan="${subjectsUnion.length + 2}" class="rr-empty-note">لا توجد بيانات</td></tr>`;
+            } else {
+                let subjectGrandTotals = {};
+                subjectsUnion.forEach(s => { subjectGrandTotals[s] = 0; });
+
+                classDivLabels.forEach(label => {
+                    const s = classDivStats[label];
+                    let rowTotal = 0;
+                    stats2RowsHTML += `<tr><td class="rr-name-col">${label}</td>`;
+                    subjectsUnion.forEach(subjName => {
+                        if (s.subjectsList.includes(subjName)) {
+                            const count = s.subjectFail[subjName] || 0;
+                            subjectGrandTotals[subjName] += count;
+                            rowTotal += count;
+                            stats2RowsHTML += `<td>${count > 0 ? toArabicDigits(count) : '-'}</td>`;
+                        } else {
+                            stats2RowsHTML += `<td>—</td>`;
+                        }
+                    });
+                    stats2RowsHTML += `<td style="font-weight:bold;">${toArabicDigits(rowTotal)}</td></tr>`;
+                });
+
+                let grandSubjectInstances = Object.values(subjectGrandTotals).reduce((a, b) => a + b, 0);
+                stats2RowsHTML += `<tr style="background-color:#dbe9ff; font-weight:bold;"><td>المجموع الكلي</td>`;
+                subjectsUnion.forEach(subjName => {
+                    stats2RowsHTML += `<td>${toArabicDigits(subjectGrandTotals[subjName])}</td>`;
+                });
+                stats2RowsHTML += `<td>${toArabicDigits(grandSubjectInstances)}</td></tr>`;
+            }
+
+            const pageHTML = `
+                <div style="text-align: center; margin-bottom: 20px;" class="no-print-btn">
+                    <button class="btn btn-print" style="padding: 12px 25px; font-size: 15px; background-color: #2c3e50; color: white;" onclick="window.print()">🖨️ طباعة السجل</button>
+                    <button class="btn" style="background-color: #6c757d; color: white; padding: 12px 25px; font-size: 15px; margin-right: 10px;" onclick="closeReappearReportView()">🔙 العودة</button>
+                </div>
+                <div class="reappear-report-page">
+                    <div class="reappear-report-header">
+                        <div class="rr-school-name">اسم المدرسة:<br>${schoolName}</div>
+                        <div class="rr-center-title">
+                            <h2>سجل المكملين</h2>
+                            <p>امتحان ${examType} الدور ${examRole}</p>
+                            <p>العام الدراسي: ${schoolYear}</p>
+                        </div>
+                        <div class="rr-spacer"></div>
+                    </div>
+                    <table class="reappear-report-table">
+                        <thead>
+                            <tr>
+                                <th style="width:5%;">ت</th>
+                                <th style="width:22%;">اسم التلميذ</th>
+                                <th style="width:15%;">الصف والشعبة</th>
+                                <th style="width:33%;">المواد المكمل فيها</th>
+                                <th style="width:10%;">النتيجة</th>
+                                <th style="width:15%;">التوقيع</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${bodyRowsHTML}
+                        </tbody>
+                    </table>
+
+                    <h3 style="margin-top:25px; margin-bottom:8px; font-size:15px; text-align:center; background-color:#eef3f9; padding:6px; border:1px solid #000;">إحصاء التلاميذ المكملين والراسبين حسب الشعبة</h3>
+                    <table class="reappear-report-table">
+                        <thead>
+                            <tr>
+                                <th style="width:34%;">الصف والشعبة</th>
+                                <th>المكملون</th>
+                                <th>الراسبون</th>
+                                <th>المجموع الكلي</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${stats1RowsHTML}
+                        </tbody>
+                    </table>
+
+                    <h3 style="margin-top:25px; margin-bottom:8px; font-size:15px; text-align:center; background-color:#eef3f9; padding:6px; border:1px solid #000;">إحصاء الراسبين حسب المادة الدراسية للصف والشعبة</h3>
+                    <table class="reappear-report-table" style="font-size:11px;">
+                        <thead>
+                            <tr>
+                                ${stats2HeaderHTML}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${stats2RowsHTML}
+                        </tbody>
+                    </table>
+
+                    <div class="reappear-report-footer">
+                        <div class="rr-manager-block">
+                            <div class="rr-sig-line">مدير المدرسة / ${managerName}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.classList.add('reappear-report-active');
+            document.getElementById('mainSystemContainer').style.display = 'none';
+            const reportContainer = document.getElementById('reappearReportContainer');
+            reportContainer.innerHTML = pageHTML;
+            reportContainer.style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+
+        function closeReappearReportView() {
+            document.body.classList.remove('reappear-report-active');
+            document.getElementById('reappearReportContainer').style.display = 'none';
+            document.getElementById('mainSystemContainer').style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+
+        function saveAllStudentsData() {
+            const rows = document.querySelectorAll('.student-row');
+            const namesData = [];
+            const gradesData = [];
+
+            rows.forEach(row => {
+                const idInput = row.querySelector('.student-id-input');
+                const nameInput = row.querySelector('.student-name-input');
+                if(!nameInput) return;
+
+                if(idInput) idInput.value = forceArabicDigitsText(idInput.value);
+
+                const id = idInput ? idInput.value.trim() : "";
+                const name = nameInput.value.trim();
+                
+                const grades = [];
+                row.querySelectorAll('.grade-input-field').forEach(input => { 
+                    input.value = forceArabicDigitsText(input.value);
+                    grades.push(input.value.trim()); 
+                });
+
+                namesData.push({ id, name });
+                gradesData.push({ id, grades });
+            });
+
+            localStorage.setItem(getNamesStorageKey(), JSON.stringify(namesData));
+            localStorage.setItem(getGradesStorageKey(), JSON.stringify(gradesData));
+            showSaveIndicator();
+        }
+
+        function loadCurrentGroupData() {
+            const savedNames = localStorage.getItem(getNamesStorageKey());
+            const savedGrades = localStorage.getItem(getGradesStorageKey());
+            
+            const namesList = savedNames ? JSON.parse(savedNames) : [];
+            const gradesList = savedGrades ? JSON.parse(savedGrades) : [];
+            
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            if (namesList.length === 0) {
+                tbody.appendChild(createRowElement({ id: "", name: "", grades: new Array(currentSubjects.length).fill("") }, 1));
+            } else {
+                namesList.forEach((stName, index) => {
+                    let stGrade = gradesList[index] || { grades: new Array(currentSubjects.length).fill("") };
+                    tbody.appendChild(createRowElement({ id: stName.id, name: stName.name, grades: stGrade.grades }, index + 1));
+                });
+            }
+            calculateResults();
+            combinedSearchAndFilter();
+        }
+
+        function loadSavedSystemConfig() {
+            const savedSchoolGlobal = localStorage.getItem('schoolInfoGlobalData_v4');
+            if (savedSchoolGlobal) {
+                const school = JSON.parse(savedSchoolGlobal);
+                document.getElementById('schoolName').value = school.name || "اسم المدرسة";
+                document.getElementById('schoolYear').value = school.year || "٢٠٢٥ - ٢٠٢٦";
+                if(school.examType) document.getElementById('examTypeSelect').value = school.examType;
+                if(school.examRole) document.getElementById('examRoleSelect').value = school.examRole;
+                if (school.currentClass) document.getElementById('classSelect').value = school.currentClass;
+                if (school.currentDivision) document.getElementById('divisionSelect').value = school.currentDivision;
+            }
+
+            const savedFooter = localStorage.getItem('footerInfoData');
+            const initialManager = savedFooter ? JSON.parse(savedFooter).manager || "اسم المدير" : "اسم المدير";
+            const initialTitle = savedFooter ? JSON.parse(savedFooter).title || "اسم المرشد" : "اسم المرشد";
+            
+            document.getElementById('managerName').value = initialManager;
+            document.getElementById('managerTitle').value = initialTitle;
+
+            document.querySelectorAll('.lbl-manager-name').forEach(el => el.innerText = initialManager);
+            document.querySelectorAll('.lbl-manager-title').forEach(el => el.innerText = initialTitle);
+
+            updateSubjectsList();
+            renderTableStructures();
+            loadCurrentGroupData();
+        }
+
+        window.onclick = function(event) {
+            const importModal = document.getElementById('importModal');
+            const migrateModal = document.getElementById('migrateModal');
+            const migrateStudentModal = document.getElementById('migrateStudentModal');
+            if (event.target == importModal) closeImportModal();
+            if (event.target == migrateModal) closeMigrateModal();
+            if (event.target == migrateStudentModal) closeMigrateStudentModal();
+        }
+        document.addEventListener('DOMContentLoaded', loadSavedSystemConfig);
+    </script>
+</body>
+</html>

@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>أداة درجات القرار (٥-١٥)</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+    * { box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+    body { font-family: 'Cairo', sans-serif; background: #f1f5f9; margin: 0; padding: 20px; color: #000; }
+    .wrap { max-width: 1150px; margin: 0 auto; }
+    .panel { background: #fff; border: 2px solid #000; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+    h1 { font-size: 20px; color: #0d2c54; margin: 0 0 5px 0; }
+    .sub { color: #555; font-size: 13px; margin-bottom: 18px; }
+    .row { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 12px; }
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    label { font-weight: 700; font-size: 13px; }
+    select, input[type="number"], input[type="text"] { font-family: 'Cairo', sans-serif; padding: 8px 10px; border: 2px solid #ccc; border-radius: 6px; font-size: 14px; font-weight: 600; }
+    input[type="file"] { font-family: 'Cairo', sans-serif; }
+    .btn { font-family: 'Cairo', sans-serif; border: none; border-radius: 6px; padding: 10px 20px; font-size: 14px; font-weight: 700; cursor: pointer; color: #fff; }
+    .btn-primary { background: #0d2c54; }
+    .btn-purple { background: #6f42c1; }
+    .btn-green { background: #166534; }
+    .btn-gray { background: #6c757d; }
+    .btn:disabled { background: #adb5bd; cursor: not-allowed; }
+    .quick-vals { display: flex; gap: 6px; }
+    .quick-vals button { border: 2px solid #6f42c1; background: #fff; color: #6f42c1; border-radius: 6px; padding: 6px 12px; font-weight: 800; cursor: pointer; font-family: 'Cairo', sans-serif; }
+    .status-msg { font-size: 13px; font-weight: 700; padding: 8px 12px; border-radius: 6px; margin-top: 8px; }
+    .status-ok { background: #dcfce7; color: #166534; }
+    .status-warn { background: #fef9c3; color: #854d0e; }
+    .assumption-box { background: #eff6ff; border: 2px dashed #2563eb; border-radius: 8px; padding: 12px 16px; font-size: 12.5px; line-height: 1.9; color: #1e3a5f; margin-top: 10px; }
+    .assumption-box b { color: #0d2c54; }
+
+    table.reg-table { width: 100%; border-collapse: collapse; font-weight: 700; margin-top: 10px; }
+    table.reg-table th, table.reg-table td { border: 2px solid #000; padding: 6px 4px; font-size: 12.5px; font-weight: 700; text-align: center; color: #000; }
+    table.reg-table th { background-color: #2563eb; color: #fff; font-weight: 800; }
+    td.name-cell, td.classdiv-cell { text-align: right; padding-right: 8px; }
+    td.after-fail { background: #fee2e2; }
+    td.after-pass { background: #dcfce7; }
+    .added-input { width: 55px; text-align: center; padding: 4px; border: 2px solid #6f42c1; border-radius: 5px; font-weight: 800; font-family: 'Cairo', sans-serif; }
+    .result-cell { font-size: 12.5px; text-align: right; padding-right: 10px; line-height: 1.6; }
+    .result-pass { color: #166534; }
+    .result-incomplete { color: #b45309; }
+    .result-fail { color: #b91c1c; }
+    .pool-tag { display: inline-block; background: #ede412; color: #000; border-radius: 4px; padding: 1px 6px; font-size: 11px; margin-right: 4px; }
+
+    .print-header { display: none; }
+    .print-footer { display: none; }
+    .print-header-inner { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .print-header-right { font-size: 14px; font-weight: 800; text-align: right; white-space: nowrap; }
+    .print-header-center { flex: 1; text-align: center; }
+    .print-header-center h2 { margin: 0 0 4px 0; font-size: 18px; }
+    .print-header-center .meta { font-size: 13px; font-weight: 600; }
+
+    /* ===== تنسيق الكروت السنوية (نسخة مطابقة للملف الأصلي) ===== */
+    .cards-container { display: none; }
+    .advanced-report-card { font-family: 'Cairo', sans-serif; font-weight: 600; background: #fff; border: 3px solid #000; padding: 15px 25px; margin: 0 auto 25px auto; width: 1030px; min-height: 18.2cm; box-sizing: border-box; display: flex; flex-direction: column; color: #000; }
+    .adv-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #000; padding-bottom: 10px; margin-bottom: 10px; }
+    .adv-header-right { text-align: right; font-size: 13px; line-height: 1.5; font-weight: 500; flex: 1; }
+    .adv-header-left { text-align: right !important; font-size: 13px; line-height: 1.5; font-weight: 500; flex: 1; display: flex; flex-direction: column; align-items: flex-start; padding-right: 40px; }
+    .adv-header-left div { font-weight: 700; }
+    .adv-header-center-box { border: 2px solid #000; padding: 6px 20px; text-align: center; min-width: 320px; border-radius: 4px; background-color: #0b3b6c; }
+    .adv-header-center-box h2 { margin: 0; font-size: 18px; color: #ffffff; font-weight: 800; }
+    .adv-header-center-box p { margin: 3px 0 0 0; font-size: 12px; color: #ffffff; font-weight: 500; }
+    .adv-card-table { table-layout: fixed; width: 980px; border-collapse: collapse; margin-bottom: 8px; border: 3px solid #000; }
+    .adv-card-table th { background-color: #63e3e4; color: #000; font-size: 10.5px; border: 2px solid #000; padding: 5px 2px; vertical-align: middle; text-align: center; font-weight: 700; line-height: 1.25; }
+    .adv-card-table td { border: 2px solid #000; padding: 4px 2px; font-size: 13px; text-align: center; height: 35px; font-weight: 700; color: #000; }
+    .adv-subject-cell { width: 128px !important; text-align: right !important; padding-right: 12px !important; font-weight: 700; background-color: #ede412; }
+    .adv-card-table th:not(.adv-subject-cell), .adv-card-table td:not(.adv-subject-cell) { width: 56.7px !important; }
+    .card-decision-boost-col { background: #eafaf0 !important; }
+    .card-grade-fail { color: #990000 !important; font-weight: 700 !important; text-decoration: underline !important; text-decoration-color: #990000 !important; text-decoration-style: solid !important; text-decoration-thickness: 1px !important; }
+    .card-decision-boost { color: #0d5f0d !important; font-weight: 800 !important; }
+    .card-text-fail { color: #990000 !important; font-weight: 700 !important; }
+    .card-fail-subjects-mini { font-size: 12px !important; font-weight: 700 !important; color: #990000; display: block; margin-top: 3px; line-height: 1.3; font-family: 'Cairo', sans-serif; }
+    .card-decision-note { font-size: 11.5px !important; font-weight: 700 !important; color: #0d5f0d; display: block; margin-top: 3px; line-height: 1.3; font-family: 'Cairo', sans-serif; }
+    .adv-card-summary { display: flex; justify-content: space-between; align-items: center; border: 3px solid #000; padding: 8px 25px; font-size: 14px; font-weight: 500; background-color: #f8fafc; margin-bottom: 4px; margin-top: auto; flex-wrap: wrap; gap: 5px; border-radius: 4px; width: 980px; box-sizing: border-box; }
+    .adv-card-summary div { font-weight: 500; }
+    .adv-card-summary span { font-weight: 700; }
+    .adv-card-footer { display: flex; justify-content: space-between; width: 980px; font-size: 13.5px; font-weight: 700; padding-top: 5px; border-top: 2px dashed #000; margin-top: 5px; box-sizing: border-box; }
+    .card-sum-avg-box { flex-basis: 100%; width: 100%; box-sizing: border-box; text-align: center; font-size: 12.5px; font-weight: 700; margin-top: 6px; padding-top: 6px; border-top: 1px dashed #000; word-break: break-word; color: #0d2c54; }
+
+    @media print {
+        body { background: #fff; padding: 0; }
+        .no-print { display: none !important; }
+        .panel { border: none; padding: 0; margin: 0; }
+        .print-header { display: block; text-align: center; margin-bottom: 14px; }
+        .print-header h2 { margin: 0 0 4px 0; font-size: 18px; }
+        .print-header .meta { font-size: 13px; font-weight: 600; }
+        .print-footer { display: flex; justify-content: flex-end; border-top: 2px dashed #000; padding-top: 10px; margin-top: 20px; font-size: 14px; font-weight: 800; }
+        table.reg-table { page-break-inside: auto; }
+        table.reg-table tr { page-break-inside: avoid; }
+        table.reg-table tr.zero-added { display: none !important; }
+        table.reg-table tbody { counter-reset: printSeq; }
+        table.reg-table .seq-num { display: none; }
+        table.reg-table tr:not(.zero-added) td.seq-cell::before { counter-increment: printSeq; content: counter(printSeq, arabic-indic); }
+        .advanced-report-card { page-break-inside: avoid; page-break-after: always; width: 1030px !important; min-height: 18.0cm !important; margin: 0 auto !important; }
+        .advanced-report-card:first-of-type { page-break-before: avoid !important; }
+    }
+    body.cards-view-active .panel.no-print { display: none !important; }
+    body.cards-view-active #reportPanel { display: none !important; }
+    body.cards-view-active .cards-container { display: block !important; }
+    body.cards-view-active #completionRegisterPanel { display: none !important; }
+
+    #completionRegisterPanel { display: none; }
+    body.register-view-active .panel.no-print { display: none !important; }
+    body.register-view-active #reportPanel { display: none !important; }
+    body.register-view-active .cards-container { display: none !important; }
+    body.register-view-active #completionRegisterPanel { display: block !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+    <div class="panel no-print">
+        <h1>📄 أداة درجات القرار (٥-١٥) — ملحق مستقل</h1>
+        <div class="sub">أداة منفصلة تعمل من ملف النسخة الاحتياطية المُصدَّر من النظام الأصلي، ولا تُعدّل عليه شيئًا. تُنتج ورقة ملحق وكروتًا سنوية قابلة للطباعة فقط.</div>
+
+        <div id="resumeBox"></div>
+
+        <div class="row">
+            <div class="field">
+                <label>١) ارفعي ملف النسخة الاحتياطية (JSON)</label>
+                <input type="file" id="backupFileInput" accept=".json" onchange="handleFileUpload(event)">
+            </div>
+        </div>
+        <div id="uploadStatus"></div>
+
+        <div class="row" id="controlsRow" style="display:none;">
+            <div class="field">
+                <label>٢) الصف</label>
+                <select id="classFilter" onchange="renderReport()">
+                    <option value="__ALL__">كل الصفوف</option>
+                </select>
+            </div>
+            <div class="field">
+                <label>الشعبة</label>
+                <select id="divisionFilter" onchange="renderReport()">
+                    <option value="__ALL__">كل الشُعب</option>
+                </select>
+            </div>
+            <div class="field">
+                <label>٣) مجموع درجة القرار لكل تلميذ (تُوزَّع على مواد الإكمال، وهي مشتركة بين الدورين معًا)</label>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <input type="number" id="decisionValueInput" value="15" min="0" style="width:80px;" oninput="renderReport()">
+                    <div class="quick-vals">
+                        <button type="button" onclick="setDecisionValue(5)">٥</button>
+                        <button type="button" onclick="setDecisionValue(10)">١٠</button>
+                        <button type="button" onclick="setDecisionValue(15)">١٥</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row" id="actionRow" style="display:none;">
+            <button class="btn btn-primary" onclick="window.print()">🖨️ طباعة ورقة الملحق</button>
+            <button class="btn btn-purple" onclick="showCompletionRegister()">📋 سجل المكملين والراسبين (الدورين ١+٢)</button>
+            <button class="btn btn-purple" onclick="showCardsView()">🗂️ عرض الكروت السنوية بعد القرار</button>
+            <button class="btn btn-gray" onclick="resetAddedOverrides()">↺ إعادة الكل لتوزيع القرار الافتراضي</button>
+        </div>
+
+        <div id="assumptionsBox"></div>
+    </div>
+
+    <div class="panel" id="reportPanel" style="display:none;">
+        <div class="print-header">
+            <div class="print-header-inner">
+                <div class="print-header-right"><span id="printSchoolName">اسم المدرسة</span></div>
+                <div class="print-header-center">
+                    <h2>سجل إضافة درجات القرار</h2>
+                    <div class="meta">العام الدراسي: <span id="printYearLabel"></span></div>
+                </div>
+            </div>
+        </div>
+
+        <table class="reg-table">
+            <thead>
+                <tr>
+                    <th style="width:35px;">ت</th>
+                    <th style="width:140px;">اسم التلميذ</th>
+                    <th style="width:105px;">الصف والشعبة</th>
+                    <th style="width:70px;">الدور</th>
+                    <th style="width:115px;">المادة الدراسية</th>
+                    <th style="width:80px;">الدرجة قبل القرار</th>
+                    <th style="width:80px;">الدرجة بعد القرار</th>
+                    <th style="width:90px;">مقدار الدرجة المضافة</th>
+                    <th style="width:75px;">الباقي من مجموع القرار</th>
+                    <th style="width:200px;">النتيجة</th>
+                </tr>
+            </thead>
+            <tbody id="reportBody"></tbody>
+        </table>
+
+        <div class="print-footer">
+            <div id="printFooterInfo">مدير المدرسة</div>
+        </div>
+    </div>
+
+    <div class="cards-container" id="cardsContainer">
+        <div class="no-print" style="text-align:center; margin-bottom:20px;">
+            <button class="btn btn-primary" onclick="window.print()">🖨️ طباعة الكروت</button>
+            <button class="btn btn-gray" onclick="hideCardsView()">🔙 عودة لجدول القرار</button>
+        </div>
+        <div id="cardsBody"></div>
+    </div>
+
+    <div class="panel" id="completionRegisterPanel">
+        <div class="no-print" style="text-align:center; margin-bottom:16px;">
+            <button class="btn btn-primary" onclick="window.print()">🖨️ طباعة السجل</button>
+            <button class="btn btn-gray" onclick="hideCompletionRegister()">🔙 عودة لجدول القرار</button>
+        </div>
+        <div class="print-header">
+            <div class="print-header-inner">
+                <div class="print-header-right"><span id="printSchoolNameReg">اسم المدرسة</span></div>
+                <div class="print-header-center">
+                    <h2>سجل المكملين والراسبين بعد إضافة درجات القرار (الدورين الأول والثاني)</h2>
+                    <div class="meta">العام الدراسي: <span id="printYearLabelReg"></span></div>
+                </div>
+            </div>
+        </div>
+
+        <table class="reg-table">
+            <thead>
+                <tr>
+                    <th style="width:35px;">ت</th>
+                    <th style="width:150px;">اسم التلميذ</th>
+                    <th style="width:120px;">الصف والشعبة</th>
+                    <th style="width:75px;">الدور</th>
+                    <th>المواد (راسب/إكمال)</th>
+                    <th style="width:110px;">النتيجة</th>
+                    <th style="width:90px;">التوقيع</th>
+                </tr>
+            </thead>
+            <tbody id="completionRegisterBody"></tbody>
+        </table>
+
+        <div style="font-weight:800; color:#0d2c54; border-bottom:2px solid #000; padding-bottom:6px; margin:22px 0 8px 0; font-size:14px;">📊 إحصائية عدد المكملين والراسبين حسب الصف والشعبة</div>
+        <table class="reg-table">
+            <thead>
+                <tr><th>الصف والشعبة</th><th>عدد المكملين</th><th>عدد الراسبين</th><th>المجموع</th></tr>
+            </thead>
+            <tbody id="regStatsClassBody"></tbody>
+        </table>
+
+        <div style="font-weight:800; color:#0d2c54; border-bottom:2px solid #000; padding-bottom:6px; margin:22px 0 8px 0; font-size:14px;">📊 إحصائية عدد الراسبين في كل مادة دراسية حسب الصف والشعبة</div>
+        <table class="reg-table">
+            <thead>
+                <tr id="regStatsSubjectHeader"><th>الصف والشعبة</th></tr>
+            </thead>
+            <tbody id="regStatsSubjectBody"></tbody>
+        </table>
+
+        <div class="print-footer">
+            <div id="printFooterInfoReg">مدير المدرسة</div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    let backupData = null; // { key: stringValue, ... } كما في localStorage
+    let addedOverrides = {}; // "cl|div|studentName|round|subjectIdx" -> رقم مُدخل يدويًا
+    let lastComputedStudents = []; // يُحفظ من renderReport() لاستخدامه في توليد الكروت
+
+    /* ============================= الحفظ التلقائي محليًا ============================= */
+    const AUTOSAVE_KEY = 'decisionTool_autoSave_v1';
+
+    function saveAutoState() {
+        if(!backupData) return;
+        try {
+            const payload = {
+                backupData: backupData,
+                addedOverrides: addedOverrides,
+                decisionValue: document.getElementById('decisionValueInput') ? document.getElementById('decisionValueInput').value : 15,
+                savedAt: new Date().toISOString()
+            };
+            localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(payload));
+        } catch(e) { /* تجاهل أخطاء التخزين، لا تعطّل عمل الأداة */ }
+    }
+
+    function loadAutoState() {
+        try {
+            const raw = localStorage.getItem(AUTOSAVE_KEY);
+            return raw ? JSON.parse(raw) : null;
+        } catch(e) { return null; }
+    }
+
+    function clearAutoState() {
+        try { localStorage.removeItem(AUTOSAVE_KEY); } catch(e) {}
+        document.getElementById('resumeBox').innerHTML = '';
+    }
+
+    function initResumeOption() {
+        const state = loadAutoState();
+        const box = document.getElementById('resumeBox');
+        if(state && state.backupData) {
+            let when = '';
+            try { when = state.savedAt ? new Date(state.savedAt).toLocaleString('ar-IQ') : ''; } catch(e) {}
+            box.innerHTML = `
+                <div class="status-msg status-ok" style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+                    <span>📂 يوجد نسخة مستوردة محفوظة تلقائيًا${when ? ' بتاريخ ' + when : ''}.</span>
+                    <span style="display:flex; gap:8px;">
+                        <button type="button" class="btn btn-green" style="padding:6px 14px; font-size:13px;" onclick="resumeLastImport()">↩️ الدخول إلى آخر نسخة مستوردة</button>
+                        <button type="button" class="btn btn-gray" style="padding:6px 14px; font-size:13px;" onclick="clearAutoState()">🗑️ حذف النسخة المحفوظة</button>
+                    </span>
+                </div>`;
+        } else {
+            box.innerHTML = '';
+        }
+    }
+
+    function resumeLastImport() {
+        const state = loadAutoState();
+        if(!state || !state.backupData) { alert("⚠️ لا توجد نسخة محفوظة لاستعادتها."); return; }
+        backupData = state.backupData;
+        addedOverrides = state.addedOverrides || {};
+        document.getElementById('uploadStatus').innerHTML = `<div class="status-msg status-ok">✅ تم استرجاع آخر نسخة مستوردة تلقائيًا.</div>`;
+        document.getElementById('controlsRow').style.display = 'flex';
+        document.getElementById('actionRow').style.display = 'flex';
+        populateClassDivisionFilters();
+        if(state.decisionValue !== undefined) document.getElementById('decisionValueInput').value = state.decisionValue;
+        showAssumptions();
+        renderReport();
+    }
+
+    function toArabicDigits(num) {
+        if(num === null || num === undefined || num === "") return "٠";
+        return num.toString().replace(/[0-9]/g, w => ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'][+w]);
+    }
+    function toEnglishDigits(str) {
+        if(!str) return "0"; let s = str.toString().trim();
+        if(s === "غ" || s === "غائب") return "غ";
+        return s.replace(/[٠-٩]/g, d => d.charCodeAt(0) - 1632);
+    }
+    function forceArabicDigitsText(text) {
+        if(!text) return ""; if(text === "غ" || text === "غائب") return "غ";
+        return text.toString().replace(/[0-9.]/g, ch => { if(ch === '.') return '.'; return ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'][parseInt(ch)]; });
+    }
+    function customRoundValue(value) {
+        let decimal = value - Math.floor(value);
+        return (decimal >= 0.5) ? Math.ceil(value) : Math.floor(value);
+    }
+    // يحوّل رقمًا صحيحًا إلى كتابته بالحروف العربية (يكفي لمجموع درجات المواد)
+    function numberToArabicWords(n) {
+        n = Math.round(n);
+        if(n <= 0) return "صفر";
+        const ones = ["", "واحد", "اثنان", "ثلاثة", "أربعة", "خمسة", "ستة", "سبعة", "ثمانية", "تسعة"];
+        const teens = ["عشرة", "أحد عشر", "اثنا عشر", "ثلاثة عشر", "أربعة عشر", "خمسة عشر", "ستة عشر", "سبعة عشر", "ثمانية عشر", "تسعة عشر"];
+        const tens = ["", "", "عشرون", "ثلاثون", "أربعون", "خمسون", "ستون", "سبعون", "ثمانون", "تسعون"];
+        const hundreds = ["", "مائة", "مئتان", "ثلاثمائة", "أربعمائة", "خمسمائة", "ستمائة", "سبعمائة", "ثمانمائة", "تسعمائة"];
+
+        function under100(num) {
+            if(num < 10) return ones[num];
+            if(num < 20) return teens[num - 10];
+            const t = Math.floor(num / 10), o = num % 10;
+            return o === 0 ? tens[t] : `${ones[o]} و${tens[t]}`;
+        }
+        function under1000(num) {
+            const h = Math.floor(num / 100), rem = num % 100;
+            let parts = [];
+            if(h > 0) parts.push(hundreds[h]);
+            if(rem > 0) parts.push(under100(rem));
+            return parts.join(" و");
+        }
+        if(n < 1000) return under1000(n);
+        const th = Math.floor(n / 1000), remTh = n % 1000;
+        let thWord;
+        if(th === 1) thWord = "ألف";
+        else if(th === 2) thWord = "ألفان";
+        else if(th <= 10) thWord = `${ones[th]} آلاف`;
+        else thWord = `${under1000(th)} ألف`;
+        return remTh > 0 ? `${thWord} و${under1000(remTh)}` : thWord;
+    }
+
+    const currentSubjects = ["التربية الاسلامية", "اللغة العربية", "اللغة الانكليزية", "الرياضيات", "الاجتماعيات", "العلوم", "الفنية", "التربية الرياضية"];
+    const classesList = ["الخامس الابتدائي", "السادس الابتدائي"];
+    const divisionsList = ["بدون شعبة", "أ", "ب", "ج", "د"];
+
+    // لوحة ألوان فاتحة تُميّز كل تلميذ عن غيره في جدول القرارات (تدور دوريًا مع عدد التلاميذ)
+    const studentColorPalette = ["#eaf4ff", "#fff2e0", "#eafaf1", "#fdeaf3", "#f3f0ff", "#fffbe0", "#e0faff", "#fbe9e7", "#e8f5e9", "#f1f8e9", "#ede7f6", "#fce4ec"];
+
+    function handleFileUpload(event) {
+        const file = event.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                backupData = JSON.parse(e.target.result);
+                addedOverrides = {};
+                document.getElementById('uploadStatus').innerHTML = `<div class="status-msg status-ok">✅ تم تحميل الملف بنجاح.</div>`;
+                document.getElementById('controlsRow').style.display = 'flex';
+                document.getElementById('actionRow').style.display = 'flex';
+                populateClassDivisionFilters();
+                showAssumptions();
+                renderReport();
+                saveAutoState();
+                initResumeOption();
+            } catch(err) {
+                document.getElementById('uploadStatus').innerHTML = `<div class="status-msg status-warn">❌ الملف غير صالح أو تالف.</div>`;
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    function populateClassDivisionFilters() {
+        const clSel = document.getElementById('classFilter');
+        const divSel = document.getElementById('divisionFilter');
+        clSel.innerHTML = '<option value="__ALL__">كل الصفوف</option>' + classesList.map(c => `<option value="${c}">${c}</option>`).join('');
+        divSel.innerHTML = '<option value="__ALL__">كل الشُعب</option>' + divisionsList.map(d => `<option value="${d}">${d}</option>`).join('');
+    }
+
+    function setDecisionValue(v) {
+        document.getElementById('decisionValueInput').value = v;
+        renderReport();
+    }
+
+    function resetAddedOverrides() {
+        addedOverrides = {};
+        saveAutoState();
+        renderReport();
+    }
+
+    function showAssumptions() {
+        document.getElementById('assumptionsBox').innerHTML = `
+            <div class="assumption-box">
+                <b>طريقة الحساب المعتمدة (تحققي منها قبل الطباعة):</b><br>
+                • مجموع درجة القرار هو <b>سقف واحد لكل تلميذ</b> يُوزَّع على مواد إكماله في الدورين معًا (وليس درجة مستقلة لكل مادة أو لكل دور).<br>
+                • تُعالَج مواد الدور الأول أولًا حسب الأولوية، ثم مواد الدور الثاني بما تبقّى من المجموع بعد استهلاك الدور الأول.<br>
+                • ضمن كل دور، تُرتَّب المواد من الأقرب إلى النجاح (الأعلى درجة) إلى الأدنى، لضمان نجاح أكبر عدد ممكن من المواد بمجموع القرار المتاح.<br>
+                • عمود "الباقي من مجموع القرار" هو الرصيد المتبقي من مجموع القرار <b>بعد</b> توزيعه على هذا الصف تحديدًا (يتناقص صفًا بعد صف لكل تلميذ).<br>
+                • الافتراضي لكل مادة = أقل قيمة بين (الباقي المتوفر) و(٥٠ ناقص الدرجة قبل القرار) — أي أقل مقدار كافٍ للنجاح، ويمكن تعديله يدويًا لكل مادة فتُحدَّث بقية الصفوف تلقائيًا.<br>
+                • عند تساوي مادتين بنفس الدرجة قبل القرار لنفس التلميذ ونفس الدور، تُعالَج أولًا المادة ذات السعي السنوي الأقل.<br>
+                • "النتيجة" النهائية لكل مادة تُحدَّد بدرجة الدور الثاني إن وُجدت (تفوق درجة الدور الأول)، وإلا فبدرجة الدور الأول.
+            </div>
+        `;
+    }
+
+    function getGradeRaw(cl, div, type, role, studentName, subjectIdx) {
+        const key = `db_${cl}_${div}_${type}_${role}_grades`;
+        let grades = [];
+        try { grades = JSON.parse(backupData[key] || "[]"); } catch(e) { grades = []; }
+        const found = grades.find(g => g.name === studentName);
+        if(found && found.grades && found.grades[subjectIdx] !== undefined) {
+            let raw = (found.grades[subjectIdx] || "").toString().trim();
+            if(raw === "") return null;
+            return toEnglishDigits(raw);
+        }
+        return null;
+    }
+
+    // يحسب كل مكونات مادة معينة (t1..m3, effort) بالإضافة للدرجة النهائية بدور محدد، بنفس معادلة النظام الأصلي
+    function computeSubjectComponents(cl, div, studentName, subjectIdx) {
+        const t1 = parseFloat(getGradeRaw(cl, div, "الفصل الأول", "تشرين الأول", studentName, subjectIdx)) || 0;
+        const t2 = parseFloat(getGradeRaw(cl, div, "الفصل الأول", "تشرين الثاني", studentName, subjectIdx)) || 0;
+        const t3 = parseFloat(getGradeRaw(cl, div, "الفصل الأول", "كانون الأول", studentName, subjectIdx)) || 0;
+        const mid = getGradeRaw(cl, div, "نصف السنة", "الأول", studentName, subjectIdx);
+        const m2 = parseFloat(getGradeRaw(cl, div, "الفصل الثاني", "آذار", studentName, subjectIdx)) || 0;
+        const m3 = parseFloat(getGradeRaw(cl, div, "الفصل الثاني", "نيسان", studentName, subjectIdx)) || 0;
+        const midNum = (mid === "غ") ? 0 : (parseFloat(mid) || 0);
+        const avg1 = customRoundValue((t1 + t2 + t3) / 3);
+        const avg2 = customRoundValue((m2 + m3) / 2);
+        const effort = customRoundValue((avg1 + midNum + avg2) / 3);
+        return { t1, t2, t3, mid, midNum, m2, m3, avg1, avg2, effort };
+    }
+
+    function computeSubjectFinalForRound(cl, div, studentName, subjectIdx, round) {
+        const comp = computeSubjectComponents(cl, div, studentName, subjectIdx);
+        const finRaw = getGradeRaw(cl, div, "نهاية السنة", round, studentName, subjectIdx);
+        if(finRaw === null) return null;
+        if(finRaw === "غ" || comp.mid === "غ") return { absent: true, effort: comp.effort };
+        const finNum = parseFloat(finRaw) || 0;
+        const finalG = customRoundValue((comp.effort + finNum) / 2);
+        return { finalG, effort: comp.effort, finNum };
+    }
+
+    // يبني بيانات مواد الإكمال (كلا الدورين) لتلميذ واحد، مرتبة: كل صفوف الدور الأول ثم كل صفوف الدور الثاني
+    function buildStudentFailRows(cl, div, studentName) {
+        let round1Rows = [], round2Rows = [];
+        currentSubjects.forEach((subName, idx) => {
+            const r1 = computeSubjectFinalForRound(cl, div, studentName, idx, "الأول");
+            if(r1 && !r1.absent && r1.finalG < 50) round1Rows.push({ round: "الأول", subjectIdx: idx, subjectName: subName, finalG: r1.finalG, effort: r1.effort });
+            const r2 = computeSubjectFinalForRound(cl, div, studentName, idx, "الثاني");
+            if(r2 && !r2.absent && r2.finalG < 50) round2Rows.push({ round: "الثاني", subjectIdx: idx, subjectName: subName, finalG: r2.finalG, effort: r2.effort });
+        });
+        // ترتيب تنازلي: الأقرب إلى النجاح (أعلى درجة) أولًا، ثم الأدنى تدريجيًا
+        round1Rows.sort((a,b) => (b.finalG - a.finalG) || (a.effort - b.effort));
+        round2Rows.sort((a,b) => (b.finalG - a.finalG) || (a.effort - b.effort));
+        return [...round1Rows, ...round2Rows];
+    }
+
+    // يحدد الحالة النهائية لكل مادة اعتمادًا على أحدث دور امتُحن فيه (الثاني يفوق الأول)
+    function computeSubjectDecisiveStatus(cl, div, studentName, subjectIdx, decisionMap) {
+        const finR2Raw = getGradeRaw(cl, div, "نهاية السنة", "الثاني", studentName, subjectIdx);
+        const decisiveRound = (finR2Raw !== null) ? "الثاني" : "الأول";
+        const r = computeSubjectFinalForRound(cl, div, studentName, subjectIdx, decisiveRound);
+        if(!r || r.absent) return null; // لم يُمتحن أصلًا في هذا الدور الحاسم أو غائب
+        const key = `${cl}|${div}|${studentName}|${decisiveRound}|${subjectIdx}`;
+        const added = decisionMap[key] || 0;
+        const afterGrade = r.finalG + added;
+        return { decisiveRound, finalG: r.finalG, added, afterGrade, stillFailing: afterGrade < 50 };
+    }
+
+    function renderReport() {
+        if(!backupData) return;
+        const decisionValue = parseFloat(document.getElementById('decisionValueInput').value) || 0;
+        const classFilterVal = document.getElementById('classFilter').value;
+        const divFilterVal = document.getElementById('divisionFilter').value;
+
+        let studentsList = []; // { cl, div, name, rows: [...] }
+
+        classesList.forEach(cl => {
+            if(classFilterVal !== "__ALL__" && classFilterVal !== cl) return;
+            divisionsList.forEach(div => {
+                if(divFilterVal !== "__ALL__" && divFilterVal !== div) return;
+                let names = [];
+                try { names = JSON.parse(backupData[`db_${cl}_${div}_names`] || "[]"); } catch(e) { names = []; }
+                names.forEach(n => {
+                    const studentName = (n && n.name || "").trim();
+                    if(!studentName) return;
+                    const rows = buildStudentFailRows(cl, div, studentName);
+                    if(rows.length > 0) studentsList.push({ cl, div, name: studentName, rows });
+                });
+            });
+        });
+
+        lastComputedStudents = studentsList;
+
+        const tbody = document.getElementById('reportBody');
+        if(studentsList.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="10">لا توجد مواد راسبة ضمن الفلترة الحالية</td></tr>`;
+            document.getElementById('reportPanel').style.display = 'block';
+            updatePrintHeaderFooter();
+            return;
+        }
+
+        let rowsHtml = '';
+        let counter = 1;
+        let studentIndex = 0;
+        let decisionMap = {}; // يُبنى هنا لاستخدامه لاحقًا في الكروت
+        // ألوان فاتحة تتكرر دوريًا لتمييز صفوف كل تلميذ عن التلميذ الذي يليه
+        const studentColors = ["#dbeafe", "#fef9c3", "#dcfce7", "#fce7f3", "#ede9fe", "#ffedd5", "#ccfbf1", "#e0e7ff", "#ffe4e6", "#ecfccb"];
+
+        studentsList.forEach(s => {
+            const rowColor = studentColors[studentIndex % studentColors.length];
+            studentIndex++;
+            let poolLeft = decisionValue;
+            let rowsData = []; // بيانات كل صف مادة قبل بناء الـ HTML (لضبط النتيجة أولًا)
+
+            s.rows.forEach(row => {
+                const overrideKey = `${s.cl}|${s.div}|${s.name}|${row.round}|${row.subjectIdx}`;
+                let addedAmount;
+                const maxAllowedHere = Math.max(0, poolLeft);
+                if(addedOverrides.hasOwnProperty(overrideKey)) {
+                    addedAmount = Math.min(addedOverrides[overrideKey], maxAllowedHere);
+                } else {
+                    addedAmount = Math.min(maxAllowedHere, Math.max(0, 50 - row.finalG));
+                }
+                const afterGrade = row.finalG + addedAmount;
+                poolLeft = poolLeft - addedAmount;
+                const stillFailing = afterGrade < 50;
+
+                decisionMap[overrideKey] = addedAmount;
+
+                rowsData.push({ row, overrideKey, addedAmount, afterGrade, stillFailing, poolLeftAfter: poolLeft });
+            });
+
+            // تحديد النتيجة النهائية الحقيقية للتلميذ اعتمادًا على أحدث دور امتُحن به كل مادة
+            let remainingFailSubjects = [];
+            let boostedSubjects = [];
+            currentSubjects.forEach((subName, idx) => {
+                const decisive = computeSubjectDecisiveStatus(s.cl, s.div, s.name, idx, decisionMap);
+                if(!decisive) return;
+                if(decisive.added > 0 && !decisive.stillFailing) boostedSubjects.push(subName);
+                if(decisive.stillFailing) remainingFailSubjects.push(subName);
+            });
+
+            let resultText, resultClass;
+            if(remainingFailSubjects.length === 0 && boostedSubjects.length > 0) {
+                resultText = `ناجح<br><span style="font-size:11px;">بعد رفعه بقرار في: ${boostedSubjects.join('، ')}</span>`;
+                resultClass = 'result-pass';
+            } else if(remainingFailSubjects.length === 0) {
+                resultText = `ناجح`;
+                resultClass = 'result-pass';
+            } else if(remainingFailSubjects.length <= 2) {
+                resultText = `مكمل في: ${remainingFailSubjects.join('، ')}` + (boostedSubjects.length > 0 ? `<br><span style="font-size:11px;">وتم رفعه بقرار في: ${boostedSubjects.join('، ')}</span>` : '');
+                resultClass = 'result-incomplete';
+            } else {
+                resultText = `راسب في: ${remainingFailSubjects.join('، ')}` + (boostedSubjects.length > 0 ? `<br><span style="font-size:11px;">مع رفعه بقرار في: ${boostedSubjects.join('، ')}</span>` : '');
+                resultClass = 'result-fail';
+            }
+
+            // بناء صفوف الجدول: النتيجة تتكرر في كل صف (بدل rowspan) حتى تبقى كل مادة مستقلة عند إخفاء الصفوف بلا إضافة عند الطباعة
+            rowsData.forEach(rd => {
+                rowsHtml += `
+                    <tr class="${rd.addedAmount > 0 ? '' : 'zero-added'}" style="background-color:${rowColor};">
+                        <td class="seq-cell"><span class="seq-num">${toArabicDigits(counter)}</span></td>
+                        <td class="name-cell">${s.name}</td>
+                        <td class="classdiv-cell">${s.div === "بدون شعبة" ? s.cl : `${s.cl} / ${s.div}`}</td>
+                        <td>${rd.row.round}</td>
+                        <td>${rd.row.subjectName}</td>
+                        <td>${toArabicDigits(rd.row.finalG)}</td>
+                        <td class="${rd.stillFailing ? 'after-fail' : 'after-pass'}">${toArabicDigits(rd.afterGrade)}</td>
+                        <td><input type="text" inputmode="numeric" class="added-input" value="${toArabicDigits(rd.addedAmount)}"
+                            oninput="formatArabicNumberInput(this)"
+                            onchange="setOverride('${rd.overrideKey.replace(/'/g,"\\'")}', this.value)"></td>
+                        <td>${toArabicDigits(rd.poolLeftAfter)}</td>
+                        <td class="result-cell ${resultClass}">${resultText}</td>
+                    </tr>
+                `;
+                counter++;
+            });
+
+            s._decisionMap = decisionMap; // مرجع مؤقت
+        });
+
+        // حفظ خريطة القرار الكاملة (لكل الطلاب) لاستخدامها في الكروت
+        window.__latestDecisionMap = decisionMap;
+
+        tbody.innerHTML = rowsHtml;
+        document.getElementById('reportPanel').style.display = 'block';
+        updatePrintHeaderFooter();
+    }
+
+    // يسمح فقط بالأرقام (عربية أو إنكليزية) في خانة الدرجة المضافة ويحوّلها فورًا لأرقام عربية أثناء الكتابة
+    function formatArabicNumberInput(el) {
+        let raw = el.value.replace(/[^0-9٠-٩]/g, '');
+        raw = toEnglishDigits(raw); // نطبّع كل شيء إلى إنكليزي مؤقتًا لسهولة التعامل معه
+        raw = raw.replace(/^0+(?=\d)/, ''); // إزالة الأصفار الزائدة في البداية
+        el.value = raw === '' ? '' : toArabicDigits(raw);
+    }
+
+    function setOverride(overrideKey, value) {
+        let v = parseFloat(toEnglishDigits(value)) || 0;
+        if(v < 0) v = 0;
+        addedOverrides[overrideKey] = v;
+        renderReport();
+        saveAutoState(); // حفظ تلقائي فور إدخال درجة القرار
+    }
+
+    function updatePrintHeaderFooter() {
+        let schoolInfo = {};
+        let footerInfo = {};
+        try { schoolInfo = JSON.parse(backupData['advSchoolGlobalInfo'] || "{}"); } catch(e) {}
+        try { footerInfo = JSON.parse(backupData['advFooterInfoData'] || "{}"); } catch(e) {}
+
+        document.getElementById('printSchoolName').innerText = schoolInfo.name || "اسم المدرسة";
+        document.getElementById('printYearLabel').innerText = schoolInfo.year || "";
+        document.getElementById('printFooterInfo').innerText = `مدير المدرسة / ${footerInfo.manager || "اسم المدير"}`;
+    }
+
+    /* ============================= الكروت السنوية بعد القرار ============================= */
+
+    function showCardsView() {
+        if(!backupData || lastComputedStudents.length === 0) { alert("⚠️ لا توجد بيانات محسوبة لعرضها كروتًا. تأكدي من رفع الملف ووجود مواد إكمال."); return; }
+        buildCardsHtml();
+        document.body.classList.add('cards-view-active');
+        setPrintOrientation('landscape'); // الكروت أعرض من صفحة A4 العمودية، فتحتاج صفحة أفقية حتى لا تُقص عند الطباعة
+        window.scrollTo(0,0);
+    }
+    function hideCardsView() {
+        document.body.classList.remove('cards-view-active');
+        setPrintOrientation('portrait');
+    }
+
+    // يضبط اتجاه صفحة الطباعة (@page) ديناميكيًا حسب المحتوى المعروض حاليًا
+    function setPrintOrientation(mode) {
+        let styleEl = document.getElementById('dynamicPageOrientation');
+        if(!styleEl) {
+            styleEl = document.createElement('style');
+            styleEl.id = 'dynamicPageOrientation';
+            document.head.appendChild(styleEl);
+        }
+        styleEl.textContent = `@page { size: A4 ${mode}; margin: ${mode === 'landscape' ? '0.6cm' : '1.2cm'}; }`;
+    }
+
+    function buildCardsHtml() {
+        let schoolInfo = {}; let footerInfo = {};
+        try { schoolInfo = JSON.parse(backupData['advSchoolGlobalInfo'] || "{}"); } catch(e) {}
+        try { footerInfo = JSON.parse(backupData['advFooterInfoData'] || "{}"); } catch(e) {}
+        const schoolName = schoolInfo.name || "اسم المدرسة";
+        const schoolYear = schoolInfo.year || "";
+        const managerName = footerInfo.manager || "اسم المدير";
+        const managerTitle = footerInfo.title || "اسم المرشد";
+        const decisionMap = window.__latestDecisionMap || {};
+
+        let idsByClassDiv = {};
+        classesList.forEach(cl => { divisionsList.forEach(div => {
+            let names = [];
+            try { names = JSON.parse(backupData[`db_${cl}_${div}_names`] || "[]"); } catch(e) { names = []; }
+            idsByClassDiv[`${cl}|${div}`] = names;
+        }); });
+
+        let cardsHtml = '';
+
+        lastComputedStudents.forEach(s => {
+            const namesArr = idsByClassDiv[`${s.cl}|${s.div}`] || [];
+            const foundN = namesArr.find(n => (n.name || "").trim() === s.name);
+            const examId = (foundN && foundN.id) ? foundN.id : "٠";
+
+            let tableRowsHtml = '';
+            let boostedSubjects = [];
+            let remainingFailSubjects = [];
+            let lastGradeSum = 0; // مجموع عمود الدرجة الأخيرة (الدرجة الحاسمة لكل مادة بعد القرار)
+
+            currentSubjects.forEach((sub, idx) => {
+                const comp = computeSubjectComponents(s.cl, s.div, s.name, idx);
+                const rawT1 = getGradeRaw(s.cl, s.div, "الفصل الأول", "تشرين الأول", s.name, idx);
+                const rawT2 = getGradeRaw(s.cl, s.div, "الفصل الأول", "تشرين الثاني", s.name, idx);
+                const rawT3 = getGradeRaw(s.cl, s.div, "الفصل الأول", "كانون الأول", s.name, idx);
+                const rawM2 = getGradeRaw(s.cl, s.div, "الفصل الثاني", "آذار", s.name, idx);
+                const rawM3 = getGradeRaw(s.cl, s.div, "الفصل الثاني", "نيسان", s.name, idx);
+                const finR1 = getGradeRaw(s.cl, s.div, "نهاية السنة", "الأول", s.name, idx);
+                const finR2 = getGradeRaw(s.cl, s.div, "نهاية السنة", "الثاني", s.name, idx);
+                const finR1Num = (finR1 === "غ") ? 0 : (parseFloat(finR1) || 0);
+                const finR2Num = (finR2 === "غ") ? 0 : (parseFloat(finR2) || 0);
+
+                const period1AllEmpty = (rawT1 === null && rawT2 === null && rawT3 === null);
+                const period2AllEmpty = (rawM2 === null && rawM3 === null);
+                const effortAllEmpty = (period1AllEmpty && comp.mid === null && period2AllEmpty);
+
+                const isSubAbsent1 = (finR1 === "غ" || comp.mid === "غ");
+                const hasFinalGrade1 = (finR1 !== null);
+                const finalG1 = isSubAbsent1 ? 0 : customRoundValue((comp.effort + finR1Num) / 2); // الدرجة الأصلية قبل القرار
+                const addedR1 = decisionMap[`${s.cl}|${s.div}|${s.name}|الأول|${idx}`] || 0;
+                const boostedR1 = addedR1 > 0;
+                const finalG1After = finalG1 + addedR1; // الدرجة النهائية بعد القرار
+
+                const isSubAbsent2 = (finR2 === "غ" || comp.mid === "غ");
+                const hasFinalGrade2 = (finR2 !== null);
+                const finalG2 = isSubAbsent2 ? 0 : customRoundValue((comp.effort + finR2Num) / 2); // الدرجة الأصلية قبل القرار
+                const addedR2 = decisionMap[`${s.cl}|${s.div}|${s.name}|الثاني|${idx}`] || 0;
+                const boostedR2 = addedR2 > 0;
+                const finalG2After = finalG2 + addedR2; // الدرجة الأخيرة بعد القرار
+
+                if(boostedR1 || boostedR2) boostedSubjects.push(sub);
+
+                const decisive = computeSubjectDecisiveStatus(s.cl, s.div, s.name, idx, decisionMap);
+                if(decisive && decisive.stillFailing) remainingFailSubjects.push(sub);
+                if(decisive) lastGradeSum += decisive.afterGrade;
+
+                tableRowsHtml += `
+                    <tr>
+                        <td class="adv-subject-cell">${sub}</td>
+                        <td class="${rawT1 !== null && rawT1 !== "غ" && (parseFloat(rawT1)||0) < 50 ? 'card-grade-fail' : ''}">${rawT1 === "غ" ? "غ" : (rawT1 === null ? "-" : toArabicDigits(parseFloat(rawT1)||0))}</td>
+                        <td class="${rawT2 !== null && rawT2 !== "غ" && (parseFloat(rawT2)||0) < 50 ? 'card-grade-fail' : ''}">${rawT2 === "غ" ? "غ" : (rawT2 === null ? "-" : toArabicDigits(parseFloat(rawT2)||0))}</td>
+                        <td class="${rawT3 !== null && rawT3 !== "غ" && (parseFloat(rawT3)||0) < 50 ? 'card-grade-fail' : ''}">${rawT3 === "غ" ? "غ" : (rawT3 === null ? "-" : toArabicDigits(parseFloat(rawT3)||0))}</td>
+                        <td class="${!period1AllEmpty && comp.avg1 < 50 ? 'card-grade-fail' : ''}" style="background:#f8fafc;">${period1AllEmpty ? "-" : toArabicDigits(comp.avg1)}</td>
+                        <td class="${comp.mid !== null && comp.mid !== "غ" && comp.midNum < 50 ? 'card-grade-fail' : ''}">${comp.mid === "غ" ? "غ" : (comp.mid === null ? "-" : toArabicDigits(comp.midNum))}</td>
+                        <td class="${rawM2 !== null && rawM2 !== "غ" && (parseFloat(rawM2)||0) < 50 ? 'card-grade-fail' : ''}">${rawM2 === "غ" ? "غ" : (rawM2 === null ? "-" : toArabicDigits(parseFloat(rawM2)||0))}</td>
+                        <td class="${rawM3 !== null && rawM3 !== "غ" && (parseFloat(rawM3)||0) < 50 ? 'card-grade-fail' : ''}">${rawM3 === "غ" ? "غ" : (rawM3 === null ? "-" : toArabicDigits(parseFloat(rawM3)||0))}</td>
+                        <td class="${!period2AllEmpty && comp.avg2 < 50 ? 'card-grade-fail' : ''}" style="background:#f8fafc;">${period2AllEmpty ? "-" : toArabicDigits(comp.avg2)}</td>
+                        <td class="${!effortAllEmpty && comp.effort < 50 ? 'card-grade-fail' : ''}" style="background:#f1f5f9;">${effortAllEmpty ? "-" : toArabicDigits(comp.effort)}</td>
+                        <td class="${finR1 !== null && finR1 !== "غ" && finR1Num < 50 ? 'card-grade-fail' : ''}">${finR1 === "غ" ? "غ" : (finR1 === null ? "-" : toArabicDigits(finR1Num))}</td>
+                        <td class="${!isSubAbsent1 && hasFinalGrade1 && finalG1 < 50 ? 'card-grade-fail' : ''}" style="background:#eff6ff;">${isSubAbsent1 ? "غ" : (hasFinalGrade1 ? toArabicDigits(finalG1) : "-")}</td>
+                        <td class="${boostedR1 ? 'card-decision-boost' : (!isSubAbsent1 && hasFinalGrade1 && finalG1After < 50 ? 'card-grade-fail' : '')}" style="background:#eafaf0;">${isSubAbsent1 ? "غ" : (hasFinalGrade1 ? toArabicDigits(finalG1After) : "-")}</td>
+                        <td class="${finR2 !== null && finR2 !== "غ" && finR2Num < 50 ? 'card-grade-fail' : ''}">${finR2 === "غ" ? "غ" : (finR2 === null ? "-" : toArabicDigits(finR2Num))}</td>
+                        <td class="${!isSubAbsent2 && hasFinalGrade2 && finalG2 < 50 ? 'card-grade-fail' : ''}" style="background:#eff6ff;">${isSubAbsent2 ? "غ" : (hasFinalGrade2 ? toArabicDigits(finalG2) : "-")}</td>
+                        <td class="${boostedR2 ? 'card-decision-boost' : (!isSubAbsent2 && hasFinalGrade2 && finalG2After < 50 ? 'card-grade-fail' : '')}" style="background:#eafaf0;">${isSubAbsent2 ? "غ" : (hasFinalGrade2 ? toArabicDigits(finalG2After) : "-")}</td>
+                    </tr>
+                `;
+            });
+
+            let cardStatusTxt, decisionNoteHtml = '';
+            if(remainingFailSubjects.length === 0) {
+                cardStatusTxt = "ناجح";
+                if(boostedSubjects.length > 0) decisionNoteHtml = `<span class="card-decision-note">بعد رفعه بقرار في: ${boostedSubjects.join(' - ')}</span>`;
+            } else if(remainingFailSubjects.length <= 2) {
+                cardStatusTxt = "مكمل";
+                decisionNoteHtml = `<span class="card-fail-subjects-mini">(في: ${remainingFailSubjects.join(' - ')})</span>`;
+                if(boostedSubjects.length > 0) decisionNoteHtml += `<span class="card-decision-note">وتم رفعه بقرار في: ${boostedSubjects.join(' - ')}</span>`;
+            } else {
+                cardStatusTxt = "راسب";
+                decisionNoteHtml = `<span class="card-fail-subjects-mini">(في: ${remainingFailSubjects.join(' - ')})</span>`;
+                if(boostedSubjects.length > 0) decisionNoteHtml += `<span class="card-decision-note">مع رفعه بقرار في: ${boostedSubjects.join(' - ')}</span>`;
+            }
+
+            cardsHtml += `
+                <div class="advanced-report-card">
+                    <div class="adv-header">
+                        <div class="adv-header-right">جمهورية العراق<br>وزارة التربية<br>مدرسة ${schoolName}</div>
+                        <div class="adv-header-center-box"><h2>بطاقة الدرجات بعد القرار</h2><p>العام الدراسي: ${schoolYear}</p></div>
+                        <div class="adv-header-left">
+                            <div>اسم التلميذ: ${s.name}</div>
+                            <div>الصف والشعبة: ${s.cl} - (${s.div})</div>
+                            <div>رقم القيد: ${examId}</div>
+                        </div>
+                    </div>
+                    <table class="adv-card-table">
+                        <thead>
+                            <tr>
+                                <th rowspan="2" class="adv-subject-cell">المادة الدراسية</th>
+                                <th colspan="3">الفصل الأول</th>
+                                <th rowspan="2">معدل ف١</th>
+                                <th rowspan="2">نصف السنة</th>
+                                <th colspan="2">الفصل الثاني</th>
+                                <th rowspan="2">معدل ف2</th>
+                                <th rowspan="2">السعي السنوي</th>
+                                <th rowspan="2">نهاية السنة</th>
+                                <th rowspan="2">الدرجة النهائية</th>
+                                <th rowspan="2">الدرجة النهائية بعد القرار</th>
+                                <th rowspan="2">الدور الثاني</th>
+                                <th rowspan="2">الدرجة الأخيرة</th>
+                                <th rowspan="2">الدرجة الأخيرة بعد القرار</th>
+                            </tr>
+                            <tr>
+                                <th>ت١</th><th>ت٢</th><th>ك١</th><th>آذار</th><th>نيسان</th>
+                            </tr>
+                        </thead>
+                        <tbody>${tableRowsHtml}</tbody>
+                    </table>
+                    <div class="adv-card-summary">
+                        <div style="text-align: center; min-width: 200px;">
+                            <div>النتيجة: <span class="${(cardStatusTxt === 'مكمل' || cardStatusTxt === 'راسب') ? 'card-text-fail' : ''}" style="font-size:16px;">${cardStatusTxt}</span></div>
+                            ${decisionNoteHtml}
+                        </div>
+                        <div class="card-sum-avg-box">المجموع: ${toArabicDigits(lastGradeSum)} (${numberToArabicWords(lastGradeSum)} درجة) — المعدل: ${forceArabicDigitsText((lastGradeSum / currentSubjects.length).toFixed(2))}</div>
+                    </div>
+                    <div class="adv-card-footer">
+                        <div>مرشد الصف / ${managerTitle}</div>
+                        <div>مدير المدرسة / ${managerName}</div>
+                    </div>
+                </div>
+            `;
+        });
+
+        document.getElementById('cardsBody').innerHTML = cardsHtml;
+    }
+
+    /* ============================= سجل المكملين والراسبين بعد القرار (الدورين ١+٢) ============================= */
+
+    function showCompletionRegister() {
+        if(!backupData || lastComputedStudents.length === 0) { alert("⚠️ لا توجد بيانات محسوبة لعرضها. تأكدي من رفع الملف ووجود مواد إكمال."); return; }
+        buildCompletionRegisterHtml();
+        document.body.classList.remove('cards-view-active');
+        document.body.classList.add('register-view-active');
+        setPrintOrientation('portrait');
+        window.scrollTo(0,0);
+    }
+    function hideCompletionRegister() {
+        document.body.classList.remove('register-view-active');
+        setPrintOrientation('portrait');
+    }
+
+    // يحدد نتيجة كل تلميذ (مكمل/راسب) بعد القرار مع مراعاة قاعدة الدور:
+    // - الدور الأول (لم يُمتحن بعد بدور ثانٍ): حتى مادتان متبقيتان = مكمل، ثلاث مواد فأكثر = راسب.
+    // - الدور الثاني (خضع لامتحان الإكمال): أي مادة متبقية ولو واحدة = راسب (لا يوجد "مكمل" بعد الدور الثاني).
+    function buildCompletionRegisterData() {
+        const decisionMap = window.__latestDecisionMap || {};
+        let rows = [];
+
+        lastComputedStudents.forEach(s => {
+            let remainingFailSubjects = [];
+            let hasRound2 = false;
+
+            currentSubjects.forEach((subName, idx) => {
+                const decisive = computeSubjectDecisiveStatus(s.cl, s.div, s.name, idx, decisionMap);
+                if(!decisive) return;
+                if(decisive.decisiveRound === "الثاني") hasRound2 = true;
+                if(decisive.stillFailing) remainingFailSubjects.push(subName);
+            });
+
+            if(remainingFailSubjects.length === 0) return; // ناجح تمامًا، لا يُدرَج في سجل المكملين والراسبين
+
+            let resultText;
+            if(hasRound2) {
+                resultText = "راسب"; // بعد الدور الثاني: أي مادة متبقية = راسب مهما كان عددها
+            } else {
+                resultText = (remainingFailSubjects.length <= 2) ? "مكمل" : "راسب"; // الدور الأول: القاعدة المعتادة
+            }
+
+            rows.push({
+                cl: s.cl, div: s.div, name: s.name,
+                round: hasRound2 ? "الثاني" : "الأول",
+                subjects: remainingFailSubjects,
+                result: resultText
+            });
+        });
+
+        return rows;
+    }
+
+    function buildCompletionRegisterHtml() {
+        let schoolInfo = {}; let footerInfo = {};
+        try { schoolInfo = JSON.parse(backupData['advSchoolGlobalInfo'] || "{}"); } catch(e) {}
+        try { footerInfo = JSON.parse(backupData['advFooterInfoData'] || "{}"); } catch(e) {}
+
+        document.getElementById('printSchoolNameReg').innerText = schoolInfo.name || "اسم المدرسة";
+        document.getElementById('printYearLabelReg').innerText = schoolInfo.year || "";
+        document.getElementById('printFooterInfoReg').innerText = `مدير المدرسة / ${footerInfo.manager || "اسم المدير"}`;
+
+        const rows = buildCompletionRegisterData();
+
+        const classDivTxt = (cl, div) => div === "بدون شعبة" ? cl : `${cl} / ${div}`;
+
+        const tbody = document.getElementById('completionRegisterBody');
+        if(rows.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7">لا يوجد مكملون أو راسبون ضمن البيانات الحالية</td></tr>`;
+        } else {
+            let html = '';
+            rows.forEach((r, i) => {
+                const resultClass = r.result === "راسب" ? "result-fail" : "result-incomplete";
+                html += `
+                    <tr>
+                        <td>${toArabicDigits(i+1)}</td>
+                        <td class="name-cell">${r.name}</td>
+                        <td class="classdiv-cell">${classDivTxt(r.cl, r.div)}</td>
+                        <td>${r.round}</td>
+                        <td class="classdiv-cell">${r.subjects.join('، ')}</td>
+                        <td class="${resultClass}" style="font-weight:800;">${r.result}</td>
+                        <td></td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        // إحصائية عدد المكملين والراسبين حسب الصف والشعبة
+        let statsMap = {};
+        rows.forEach(r => {
+            const key = `${r.cl}|${r.div}`;
+            if(!statsMap[key]) statsMap[key] = { cl: r.cl, div: r.div, incomplete: 0, fail: 0 };
+            if(r.result === "مكمل") statsMap[key].incomplete++; else statsMap[key].fail++;
+        });
+        let statsClassHtml = '';
+        let totalIncomplete = 0, totalFail = 0;
+        Object.values(statsMap).forEach(st => {
+            const sum = st.incomplete + st.fail;
+            totalIncomplete += st.incomplete; totalFail += st.fail;
+            statsClassHtml += `<tr><td class="classdiv-cell">${classDivTxt(st.cl, st.div)}</td><td>${toArabicDigits(st.incomplete)}</td><td>${toArabicDigits(st.fail)}</td><td>${toArabicDigits(sum)}</td></tr>`;
+        });
+        if(Object.keys(statsMap).length > 0) {
+            statsClassHtml += `<tr style="background:#f1f5f9;"><td class="classdiv-cell">الإجمالي الكلي</td><td>${toArabicDigits(totalIncomplete)}</td><td>${toArabicDigits(totalFail)}</td><td>${toArabicDigits(totalIncomplete + totalFail)}</td></tr>`;
+        } else {
+            statsClassHtml = `<tr><td colspan="4">لا توجد بيانات</td></tr>`;
+        }
+        document.getElementById('regStatsClassBody').innerHTML = statsClassHtml;
+
+        // إحصائية عدد الراسبين في كل مادة دراسية حسب الصف والشعبة
+        const headerRow = document.getElementById('regStatsSubjectHeader');
+        headerRow.innerHTML = `<th>الصف والشعبة</th>` + currentSubjects.map(sub => `<th>${sub}</th>`).join('');
+
+        let subjStatsMap = {};
+        rows.filter(r => r.result === "راسب").forEach(r => {
+            const key = `${r.cl}|${r.div}`;
+            if(!subjStatsMap[key]) {
+                subjStatsMap[key] = { cl: r.cl, div: r.div, counts: {} };
+                currentSubjects.forEach(sub => subjStatsMap[key].counts[sub] = 0);
+            }
+            r.subjects.forEach(sub => { if(subjStatsMap[key].counts[sub] !== undefined) subjStatsMap[key].counts[sub]++; });
+        });
+        let subjBodyHtml = '';
+        let totalCounts = {}; currentSubjects.forEach(sub => totalCounts[sub] = 0);
+        Object.values(subjStatsMap).forEach(st => {
+            subjBodyHtml += `<tr><td class="classdiv-cell">${classDivTxt(st.cl, st.div)}</td>` +
+                currentSubjects.map(sub => { totalCounts[sub] += st.counts[sub]; return `<td>${toArabicDigits(st.counts[sub])}</td>`; }).join('') +
+                `</tr>`;
+        });
+        if(Object.keys(subjStatsMap).length > 0) {
+            subjBodyHtml += `<tr style="background:#f1f5f9;"><td class="classdiv-cell">الإجمالي الكلي</td>` +
+                currentSubjects.map(sub => `<td>${toArabicDigits(totalCounts[sub])}</td>`).join('') + `</tr>`;
+        } else {
+            subjBodyHtml = `<tr><td colspan="${currentSubjects.length + 1}">لا توجد بيانات</td></tr>`;
+        }
+        document.getElementById('regStatsSubjectBody').innerHTML = subjBodyHtml;
+    }
+
+    /* ============================= التهيئة الأولى عند فتح الصفحة ============================= */
+    setPrintOrientation('portrait');
+    initResumeOption();
+
+    /* ============================= تكامل اختياري مع ملف النتائج (لا يغيّر أي عمل قائم) ============================= */
+    /* هذا الجزء إضافي بالكامل: إن فُتح هذا الملف بمفرده كما كان، لن يعمل شيء هنا لأنه لا يوجد أب (parent) يرسل رسالة.
+       أما إن فُتح هذا الملف داخل إطار مضمّن من ملف النتائج، فسيستقبل بيانات النسخة الاحتياطية مباشرة دون الحاجة لرفع ملف JSON يدويًا. */
+    window.addEventListener('message', function(ev) {
+        if (ev.data && ev.data.type === 'FORCE_SAVE_BEFORE_HIDE') {
+            saveAutoState();
+            return;
+        }
+        if (!ev.data || ev.data.type !== 'RESULTS_FILE_BACKUP_DATA') return;
+        try {
+            backupData = ev.data.payload;
+            // نحافظ على درجات القرار المحفوظة تلقائيًا من آخر مرة، بدل تصفيرها في كل فتح جديد
+            const saved = loadAutoState();
+            addedOverrides = (saved && saved.addedOverrides) ? saved.addedOverrides : {};
+            document.getElementById('uploadStatus').innerHTML = `<div class="status-msg status-ok">✅ تم تحميل بيانات النتائج مباشرة.</div>`;
+            document.getElementById('controlsRow').style.display = 'flex';
+            document.getElementById('actionRow').style.display = 'flex';
+            populateClassDivisionFilters();
+            if (saved && saved.decisionValue !== undefined) {
+                document.getElementById('decisionValueInput').value = saved.decisionValue;
+            }
+            showAssumptions();
+            renderReport();
+            saveAutoState();
+            document.getElementById('resumeBox').innerHTML = '';
+        } catch (err) {
+            document.getElementById('uploadStatus').innerHTML = `<div class="status-msg status-warn">❌ تعذر تحميل البيانات المرسلة من ملف النتائج.</div>`;
+        }
+    });
+    if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: 'DECISION_TOOL_READY' }, '*');
+    }
+</script>
+</body>
+</html>
