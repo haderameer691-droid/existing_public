@@ -271,6 +271,7 @@
             <div class="controls-row">
                 <button class="btn btn-add" onclick="addStudentRow()">➕ إضافة تلميذ</button>
                 <button class="btn btn-excel" onclick="openImportModal()">📥 استيراد من إكسل</button>
+                <button class="btn btn-excel" style="background:#0e7c66;" onclick="openPasteGradesModal()">📋 لصق درجات مادة</button>
                 <button class="btn btn-migrate" onclick="openMigrationModal()">📦 ترحيل واستيراد أسماء التلاميذ</button>
                 <button class="btn btn-backup" onclick="exportFullBackup()">📤 تصدير نسخة احتياطية</button>
                 <button class="btn btn-restore" onclick="triggerBackupUpload()">📥 استيراد نسخة احتياطية</button>
@@ -354,6 +355,26 @@
             </div>
         </div>
     </div>
+
+    <div id="pasteGradesModal" class="custom-modal">
+        <div class="modal-content">
+            <h3 style="font-weight: 700; color:#0e7c66;">📋 لصق درجات مادة واحدة</h3>
+            <p style="font-size:12px; color:#666; font-weight: 500;">
+                اختر المادة، ثم انسخ عمود الدرجات من الإكسل (درجة واحدة في كل سطر) والصقه هنا. سيتم توزيع الدرجات على التلاميذ بحسب ترتيب ظهورهم الحالي في الجدول (السطر الأول للتلميذ الأول، وهكذا). اكتب "غ" أو اتركه فارغًا لتخطي تلميذ.
+            </p>
+            <div style="margin-bottom:10px;">
+                <span style="font-weight:700; font-size:13px;">المادة: </span>
+                <select id="pasteGradesSubjectSelect" class="custom-select" style="width: 220px;"></select>
+            </div>
+            <textarea id="pasteGradesTextArea" class="paste-textarea" placeholder="الصق درجة كل تلميذ في سطر مستقل، بنفس ترتيب أسماء التلاميذ في الجدول"></textarea>
+            <div id="pasteGradesWarning" style="display:none; margin-top:8px; font-size:12px; font-weight:700; color:#8b0000;"></div>
+            <div style="margin-top: 15px; display: flex; justify-content: flex-end; gap: 10px;">
+                <button class="btn btn-add" onclick="processPastedGrades()">استيراد الدرجات</button>
+                <button class="btn" style="background-color: #6c757d; color: white;" onclick="closePasteGradesModal()">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
 
     <div id="migrationModal" class="custom-modal">
         <div class="modal-content" style="width: 40%;">
@@ -544,6 +565,19 @@ value="د">د</option><option                   value="بدون شعبة">بدو
                 });
                 subjSelect.value = prevVal;
                 if(subjSelect.selectedIndex === -1) subjSelect.value = "ALL";
+            }
+
+            const pasteSubjSelect = document.getElementById('pasteGradesSubjectSelect');
+            if(pasteSubjSelect) {
+                const prevPasteVal = pasteSubjSelect.value;
+                pasteSubjSelect.innerHTML = '';
+                currentSubjects.forEach((s, si) => {
+                    const opt = document.createElement('option');
+                    opt.value = si; opt.textContent = s;
+                    pasteSubjSelect.appendChild(opt);
+                });
+                if(prevPasteVal !== "" && prevPasteVal !== null) pasteSubjSelect.value = prevPasteVal;
+                if(pasteSubjSelect.selectedIndex === -1) pasteSubjSelect.selectedIndex = 0;
             }
         }
 
@@ -848,6 +882,56 @@ value="د">د</option><option                   value="بدون شعبة">بدو
             saveAllStudentsData(); sortStudentsAlphabetically(); closeImportModal();
         }
 
+        function openPasteGradesModal() {
+            document.getElementById('pasteGradesTextArea').value = '';
+            document.getElementById('pasteGradesWarning').style.display = 'none';
+            const subjSel = document.getElementById('subjectFilterSelect');
+            const pasteSel = document.getElementById('pasteGradesSubjectSelect');
+            if(subjSel && pasteSel && subjSel.value !== 'ALL' && subjSel.value !== '') {
+                pasteSel.value = subjSel.value;
+            }
+            document.getElementById('pasteGradesModal').style.display = 'block';
+        }
+        function closePasteGradesModal() { document.getElementById('pasteGradesModal').style.display = 'none'; }
+
+        function processPastedGrades() {
+            const subjSelect = document.getElementById('pasteGradesSubjectSelect');
+            const subjIdx = subjSelect.value;
+            if(subjIdx === '' || subjIdx === null) return;
+            const txt = document.getElementById('pasteGradesTextArea').value;
+            if(!txt.trim()) return;
+
+            const lines = txt.replace(/\r/g, '').split('\n');
+            while(lines.length && lines[lines.length - 1].trim() === '') lines.pop();
+
+            const rows = Array.from(document.querySelectorAll('#tableBody .student-row')).filter(r => r.style.display !== 'none');
+            const warnEl = document.getElementById('pasteGradesWarning');
+
+            let filled = 0;
+            lines.forEach((rawLine, i) => {
+                if(i >= rows.length) return;
+                const line = rawLine.trim();
+                if(line === '') return;
+                const field = rows[i].querySelector(`td[data-subj-idx="${subjIdx}"] .grade-input-field`);
+                if(!field) return;
+                if(line === 'غ' || line === 'غائب') { field.value = 'غ'; }
+                else { field.value = forceArabicDigitsText(line); }
+                filled++;
+            });
+
+            saveAllStudentsData();
+            calculateLiveStatistics();
+            combinedSearchAndFilter();
+            showSaveIndicator();
+
+            if(lines.length !== rows.length) {
+                warnEl.textContent = `⚠️ تم توزيع ${filled} درجة على ${rows.length} تلميذ ظاهر حاليًا في الجدول (عدد الأسطر الملصقة: ${lines.length}). تأكد من أن ترتيب الدرجات يطابق ترتيب الأسماء في الجدول ثم راجع الدرجات أدناه.`;
+                warnEl.style.display = 'block';
+            } else {
+                closePasteGradesModal();
+            }
+        }
+
         function openMigrationModal() {
             document.getElementById('migrationModal').style.display = 'block';
             toggleMigrationDirectionLabels();
@@ -1072,34 +1156,6 @@ value="د">د</option><option                   value="بدون شعبة">بدو
             combinedSearchAndFilter(); calculateLiveStatistics();
         }
 
-
-        // حفظ النسخة الاحتياطية: على الآيباد داخل التطبيق المثبّت تُستخدم نافذة المشاركة (احفظ في الملفات)، وغير ذلك تنزيل عادي
-        function downloadBackupFile(text, filename) {
-            const blob = new Blob([text], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
-        }
-        function saveBackupFile(text, filename) {
-            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-            const isStandalone = window.navigator.standalone === true || (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches);
-            try {
-                const file = new File([text], filename, { type: "application/json" });
-                if (isIOS && isStandalone && navigator.canShare && navigator.canShare({ files: [file] })) {
-                    navigator.share({ files: [file], title: filename }).catch(function(err) {
-                        if (!err || err.name !== "AbortError") downloadBackupFile(text, filename);
-                    });
-                    return;
-                }
-            } catch (e) {}
-            downloadBackupFile(text, filename);
-        }
-
         function exportFullBackup() {
             let backupData = {};
             for (let i = 0; i < localStorage.length; i++) {
@@ -1108,7 +1164,11 @@ value="د">د</option><option                   value="بدون شعبة">بدو
                     backupData[key] = localStorage.getItem(key);
                 }
             }
-            saveBackupFile(JSON.stringify(backupData, null, 2), `منظومة_الرباط_الشاملة_${new Date().toISOString().slice(0,10)}.json`);
+            let blob = new Blob([JSON.stringify(backupData, null, 2)], { type: "application/json" });
+            let a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = `منظومة_الرباط_الشاملة_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
         }
         function triggerBackupUpload() { document.getElementById('backupFileInput').click(); }
         function importFullBackup(event) {
@@ -1838,6 +1898,7 @@ value="د">د</option><option                   value="بدون شعبة">بدو
         }
         window.onclick = function(e) { 
             if(e.target == document.getElementById('importModal')) closeImportModal(); 
+            if(e.target == document.getElementById('pasteGradesModal')) closePasteGradesModal();
             if(e.target == document.getElementById('migrationModal')) closeMigrationModal(); 
             if(e.target == document.getElementById('migrateStudentModal')) closeMigrateStudentModal();
         }
