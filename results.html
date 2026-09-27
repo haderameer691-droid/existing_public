@@ -449,6 +449,7 @@
                 <div class="action-btns">
                     <button class="btn btn-add" onclick="addStudentRow()">➕ إضافة تلميذ واحد</button>
                     <button class="btn btn-excel" onclick="openImportModal()">📥 استيراد التلاميذ (نسخ ولصق)</button>
+                    <button class="btn btn-excel" style="background-color:#0e7c66;" onclick="openPasteGradesModal()">📋 لصق درجات مادة</button>
                     <button class="btn btn-cards" onclick="generateReportCards()">🎴 توليد كارتات النتائج</button>
                     <button class="btn" style="background-color: #b7791f; color: #fff;" onclick="generateReappearFailReport()">📋 طباعة سجل المكملين والراسبين (كل الصفوف)</button>
                     <button class="btn btn-print" onclick="window.print()">🖨️ طباعة الجدول الكامل</button>
@@ -532,6 +533,27 @@
             </div>
         </div>
     </div>
+
+    <!-- مودال لصق درجات مادة واحدة -->
+    <div id="pasteGradesModal" class="custom-modal">
+        <div class="modal-content">
+            <h3 style="margin-top: 0; color:#0e7c66;">📋 لصق درجات مادة واحدة</h3>
+            <p style="font-size: 13px; color: #555;">
+                اختاري المادة، ثم انسخي عمود الدرجات من الإكسل (درجة واحدة في كل سطر) والصقيه بالأسفل. سيتم توزيع الدرجات على التلاميذ حسب ترتيب ظهورهم الحالي في الجدول (السطر الأول للتلميذ الأول، وهكذا). اكتبي "غ" أو اتركي السطر فارغاً لتخطي تلميذ.
+            </p>
+            <div style="margin-bottom:10px;">
+                <span style="font-weight:bold; font-size:13px;">المادة: </span>
+                <select id="pasteGradesSubjectSelect" class="custom-select" style="width: 220px;"></select>
+            </div>
+            <textarea id="pasteGradesTextArea" class="paste-textarea" placeholder="الصقي درجة كل تلميذ في سطر مستقل، بنفس ترتيب أسماء التلاميذ في الجدول"></textarea>
+            <div id="pasteGradesWarning" style="display:none; margin-top:8px; font-size:12px; font-weight:bold; color:#8b0000;"></div>
+            <div style="margin-top: 15px; display: flex; justify-content: flex-end; gap: 10px;">
+                <button class="btn btn-add" onclick="processPastedGrades()">استيراد الدرجات</button>
+                <button class="btn" style="background-color: #6c757d; color: white;" onclick="closePasteGradesModal()">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
 
     <!-- مودال ترحيل الصف والشعبة الجديد -->
     <div id="migrateModal" class="custom-modal">
@@ -771,6 +793,18 @@
                 subjectFilterSelect.value = "all";
             }
             activeSubjectFilterIndex = -1;
+
+            const pasteGradesSubjectSelect = document.getElementById('pasteGradesSubjectSelect');
+            if (pasteGradesSubjectSelect) {
+                const prevPasteVal = pasteGradesSubjectSelect.value;
+                let pasteOptionsHTML = '';
+                currentSubjects.forEach((subject, idx) => {
+                    pasteOptionsHTML += `<option value="${idx}">${subject}</option>`;
+                });
+                pasteGradesSubjectSelect.innerHTML = pasteOptionsHTML;
+                if (prevPasteVal !== "" && prevPasteVal !== null) pasteGradesSubjectSelect.value = prevPasteVal;
+                if (pasteGradesSubjectSelect.selectedIndex === -1) pasteGradesSubjectSelect.selectedIndex = 0;
+            }
 
             requestAnimationFrame(() => {
                 const row1Height = headerRow.getBoundingClientRect().height;
@@ -1152,6 +1186,59 @@
         }
 
         function closeImportModal() { document.getElementById('importModal').style.display = 'none'; }
+
+        function openPasteGradesModal() {
+            document.getElementById('pasteGradesTextArea').value = '';
+            document.getElementById('pasteGradesWarning').style.display = 'none';
+            const subjectFilterSelect = document.getElementById('subjectFilterSelect');
+            const pasteSelect = document.getElementById('pasteGradesSubjectSelect');
+            if (subjectFilterSelect && pasteSelect && subjectFilterSelect.value !== 'all' && subjectFilterSelect.value !== '') {
+                pasteSelect.value = subjectFilterSelect.value;
+            }
+            document.getElementById('pasteGradesModal').style.display = 'block';
+            document.getElementById('pasteGradesTextArea').focus();
+        }
+
+        function closePasteGradesModal() { document.getElementById('pasteGradesModal').style.display = 'none'; }
+
+        function processPastedGrades() {
+            const subjectSelect = document.getElementById('pasteGradesSubjectSelect');
+            const subjectIdx = subjectSelect.value;
+            if (subjectIdx === '' || subjectIdx === null) return;
+
+            const textArea = document.getElementById('pasteGradesTextArea');
+            const rawText = textArea.value;
+            if (!rawText.trim()) return alert("الرجاء لصق الدرجات أولاً.");
+
+            const lines = rawText.replace(/\r/g, '').split('\n');
+            while (lines.length && lines[lines.length - 1].trim() === '') lines.pop();
+
+            const rows = Array.from(document.querySelectorAll('#tableBody .student-row')).filter(r => r.style.display !== 'none');
+            const warnEl = document.getElementById('pasteGradesWarning');
+
+            let filled = 0;
+            lines.forEach((rawLine, i) => {
+                if (i >= rows.length) return;
+                const line = rawLine.trim();
+                if (line === '') return;
+                const field = rows[i].querySelector(`td[data-subject-idx="${subjectIdx}"] .grade-input-field`);
+                if (!field) return;
+                if (["غ", "غائب", "غائبة"].includes(line)) { field.value = "غ"; }
+                else { field.value = forceArabicDigitsText(line); }
+                filled++;
+            });
+
+            calculateResults();
+            saveAllStudentsData();
+            showSaveIndicator();
+
+            if (lines.length !== rows.length) {
+                warnEl.textContent = `⚠️ تم توزيع ${filled} درجة على ${rows.length} تلميذ ظاهر حالياً في الجدول (عدد الأسطر الملصقة: ${lines.length}). تأكدي من أن ترتيب الدرجات يطابق ترتيب الأسماء في الجدول ثم راجعي الدرجات أدناه.`;
+                warnEl.style.display = 'block';
+            } else {
+                closePasteGradesModal();
+            }
+        }
 
         /* دوال نافذة الترحيل الجديدة */
         function openMigrateModal() {
@@ -1944,9 +2031,11 @@
 
         window.onclick = function(event) {
             const importModal = document.getElementById('importModal');
+            const pasteGradesModal = document.getElementById('pasteGradesModal');
             const migrateModal = document.getElementById('migrateModal');
             const migrateStudentModal = document.getElementById('migrateStudentModal');
             if (event.target == importModal) closeImportModal();
+            if (event.target == pasteGradesModal) closePasteGradesModal();
             if (event.target == migrateModal) closeMigrateModal();
             if (event.target == migrateStudentModal) closeMigrateStudentModal();
         }
