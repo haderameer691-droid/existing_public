@@ -1,4 +1,4 @@
-const CACHE = 'school-portal-v2'; // غيّري الرقم عند كل تحديث للملفات
+const CACHE = 'school-portal-v3'; // غيّري الرقم عند كل تحديث للملفات
 const FILES = [
   './',
   './index.html',
