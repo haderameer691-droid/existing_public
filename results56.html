@@ -75,7 +75,7 @@
         
         .status-pass { background-color: transparent !important; color: #000000 !important; font-weight: 800 !important; }
         .status-fail { background-color: transparent !important; color: #990000 !important; font-weight: 800 !important; }
-        .status-absent { background-color: #e2e3e5 !important; color: #383d41 !important; }
+        .status-absent { background-color: transparent !important; color: #990000 !important; font-weight: 800 !important; }
         .status-com { background-color: transparent !important; color: #990000 !important; font-weight: 800 !important; }
         .grade-fail-mark { background-color: transparent !important; color: #990000 !important; text-decoration: underline !important; text-decoration-color: #990000 !important; text-decoration-style: solid !important; text-decoration-thickness: 1px !important; }
 
@@ -639,7 +639,7 @@ value="د">د</option><option                   value="بدون شعبة">بدو
 
         function onGradeInput(input) {
             let val = input.value.trim();
-            if(val === "غ" || val === "غائب") { input.value = "غ"; } 
+            if(val === "غ" || val === "غائب") { input.value = val; } 
             else { input.value = forceArabicDigitsText(val); }
             saveAllStudentsData(); calculateLiveStatistics();
         }
@@ -666,7 +666,7 @@ value="د">د</option><option                   value="بدون شعبة">بدو
                     if(raw !== "") { active = true; subStats[idx].total++; }
                     
                     if(eng === "غ") {
-                        failList.push(currentSubjects[idx]);
+                        failList.push(currentSubjects[idx] + " (غ)");
                         subStats[idx].absent++;
                         field.className = "direct-input grade-input-field status-absent";
                     } else if(raw !== "") {
@@ -715,6 +715,7 @@ value="د">د</option><option                   value="بدون شعبة">بدو
                     status = "غائب";
                     statusCell.className = "calc-status status-absent";
                     totalAbsentInDivision++;
+                    totalFailOnlyInDivision++;
                 } else if(status === "ناجح") {
                     totalPassInDivision++;
                 } else if(status === "مكمل") {
@@ -774,6 +775,8 @@ value="د">د</option><option                   value="بدون شعبة">بدو
                         let pct = 0;
                         if (s.total > 0) pct = customRoundValue((s.pass / s.total) * 100);
                         val = `%${toArabicDigits(pct)}`;
+                    } else if(rowConf.key === "fail") {
+                        val = toArabicDigits(s.fail + s.absent);
                     } else {
                         val = toArabicDigits(s[rowConf.key]);
                     }
@@ -914,7 +917,7 @@ value="د">د</option><option                   value="بدون شعبة">بدو
                 if(line === '') return;
                 const field = rows[i].querySelector(`td[data-subj-idx="${subjIdx}"] .grade-input-field`);
                 if(!field) return;
-                if(line === 'غ' || line === 'غائب') { field.value = 'غ'; }
+                if(line === 'غ' || line === 'غائب') { field.value = line; }
                 else { field.value = forceArabicDigitsText(line); }
                 filled++;
             });
